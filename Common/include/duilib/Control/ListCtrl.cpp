@@ -219,8 +219,7 @@ void ListCtrl::SetAttribute(const DString& strName, const DString& strValue)
 
 void ListCtrl::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
 {
-    ASSERT(nNewDpiScale == Dpi().GetScale());
-    if (nNewDpiScale != Dpi().GetScale()) {
+    if (!Dpi().CheckDisplayScaleFactor(nNewDpiScale)) {
         return;
     }
 
@@ -348,7 +347,7 @@ void ListCtrl::InitReportView()
                 msg.SetSender(this);
                 SendEventMsg(msg);
             }
-            else if (args.eventType == kEventSelChange) {
+            else if (args.eventType == kEventSelChanged) {
                 EventArgs msg = args;
                 msg.SetSender(this);
                 SendEventMsg(msg);
@@ -360,7 +359,7 @@ void ListCtrl::InitReportView()
         OnReportViewEvent(args);
         return true;
         });
-    m_pReportView->AttachSelChange([this, OnReportViewEvent](const EventArgs& args) {
+    m_pReportView->AttachSelChanged([this, OnReportViewEvent](const EventArgs& args) {
         OnReportViewEvent(args);
         return true;
         });
@@ -405,7 +404,7 @@ void ListCtrl::InitIconView()
                 msg.SetSender(this);
                 SendEventMsg(msg);
             }
-            else if (args.eventType == kEventSelChange) {
+            else if (args.eventType == kEventSelChanged) {
                 EventArgs msg = args;
                 msg.SetSender(this);
                 SendEventMsg(msg);
@@ -417,7 +416,7 @@ void ListCtrl::InitIconView()
         OnIconViewEvent(args);
         return true;
         });
-    m_pIconView->AttachSelChange([this, OnIconViewEvent](const EventArgs& args) {
+    m_pIconView->AttachSelChanged([this, OnIconViewEvent](const EventArgs& args) {
         OnIconViewEvent(args);
         return true;
         });
@@ -464,7 +463,7 @@ void ListCtrl::InitListView()
                 msg.SetSender(this);
                 SendEventMsg(msg);
             }
-            else if (args.eventType == kEventSelChange) {
+            else if (args.eventType == kEventSelChanged) {
                 EventArgs msg = args;
                 msg.SetSender(this);
                 SendEventMsg(msg);
@@ -476,7 +475,7 @@ void ListCtrl::InitListView()
         OnListViewEvent(args);
         return true;
         });
-    m_pListView->AttachSelChange([this, OnListViewEvent](const EventArgs& args) {
+    m_pListView->AttachSelChanged([this, OnListViewEvent](const EventArgs& args) {
         OnListViewEvent(args);
         return true;
         });
@@ -1443,10 +1442,17 @@ size_t ListCtrl::GetDataItemCount() const
 
 bool ListCtrl::SetDataItemCount(size_t itemCount)
 {
+    const size_t nOldDataItemCount = m_pData->GetDataItemCount();
     bool bRet = m_pData->SetDataItemCount(itemCount);
     if (bRet) {
-        UpdateHeaderColumnCheckBox(Box::InvalidIndex);
-        UpdateHeaderCheckBox();
+        const size_t nNewDataItemCount = m_pData->GetDataItemCount();
+        bool bChanged = (nOldDataItemCount != nNewDataItemCount);
+        if (bChanged) {
+            //列表数据个数发生变化
+            UpdateHeaderColumnCheckBox(Box::InvalidIndex);
+            UpdateHeaderCheckBox();
+            SendEvent(kEventDataItemCountChanged, (WPARAM)nNewDataItemCount, (LPARAM)nOldDataItemCount);
+        }
     }
     return bRet;
 }
@@ -2020,7 +2026,7 @@ bool ListCtrl::EnsureDataItemVisible(size_t itemIndex, bool bToTop)
     return bRet;
 }
 
-void ListCtrl::Refresh()
+void ListCtrl::Refresh(bool bSync)
 {
     if (!IsInited()) {
         return;
@@ -2028,17 +2034,17 @@ void ListCtrl::Refresh()
     if (m_bEnableRefresh) {
         if (m_listCtrlType == ListCtrlType::Report) {
             if (m_pReportView != nullptr) {
-                m_pReportView->Refresh();
+                m_pReportView->Refresh(bSync);
             }
         }
         else if (m_listCtrlType == ListCtrlType::Icon) {
             if (m_pIconView != nullptr) {
-                m_pIconView->Refresh();
+                m_pIconView->Refresh(bSync);
             }
         }
         else if (m_listCtrlType == ListCtrlType::List) {
             if (m_pListView != nullptr) {
-                m_pListView->Refresh();
+                m_pListView->Refresh(bSync);
             }
         }
     }
@@ -2436,8 +2442,8 @@ void ListCtrl::OnItemEditMode(ListCtrlEditParam editParam)
     m_pRichEdit->SetFocus();
 
     //文本变化的时候，自动调整编辑框的大小
-    m_pRichEdit->DetachEvent(kEventTextChange);
-    m_pRichEdit->AttachTextChange([this, pSubItem](const EventArgs&) {
+    m_pRichEdit->DetachEvent(kEventTextChanged);
+    m_pRichEdit->AttachTextChanged([this, pSubItem](const EventArgs&) {
         UpdateRichEditSize(pSubItem);
         return true;
         });
@@ -2622,7 +2628,7 @@ void ListCtrl::ClearEditEvents()
         m_pRichEdit->DetachEvent(kEventWindowKillFocus);
         m_pRichEdit->DetachEvent(kEventKillFocus);
         m_pRichEdit->DetachEvent(kEventReturn);
-        m_pRichEdit->DetachEvent(kEventTextChange);
+        m_pRichEdit->DetachEvent(kEventTextChanged);
         m_pRichEdit->DetachEvent(kEventKeyDown);
     }
 }

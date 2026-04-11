@@ -32,8 +32,7 @@ void ListCtrlItem::SetAttribute(const DString& strName, const DString& strValue)
 
 void ListCtrlItem::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
 {
-    ASSERT(nNewDpiScale == Dpi().GetScale());
-    if (nNewDpiScale != Dpi().GetScale()) {
+    if (!Dpi().CheckDisplayScaleFactor(nNewDpiScale)) {
         return;
     }
     int32_t iValue = GetIconSpacing();
@@ -225,10 +224,10 @@ void ListCtrlItem::Paint(IRender* pRender, const UiRect& rcPaint)
         }
 
         if (imageSize.cx <= 0) {
-            imageSize.cx = pItemImage->GetImageCache()->GetWidth();
+            imageSize.cx = pItemImage->GetImageInfo()->GetWidth();
         }
         if (imageSize.cy <= 0) {
-            imageSize.cy = pItemImage->GetImageCache()->GetHeight();
+            imageSize.cy = pItemImage->GetImageInfo()->GetHeight();
         }
 
         UiRect rc = GetRect();
@@ -260,8 +259,8 @@ ImagePtr ListCtrlItem::LoadItemImage() const
         }
     }
     if (pItemImage != nullptr) {
-        LoadImageData(*pItemImage);
-        std::shared_ptr<ImageInfo> pItemImageCache = pItemImage->GetImageCache();
+        LoadImageInfo(*pItemImage);
+        std::shared_ptr<ImageInfo> pItemImageCache = pItemImage->GetImageInfo();
         if (pItemImageCache == nullptr) {
             pItemImage = nullptr;
         }
@@ -332,7 +331,7 @@ int32_t ListCtrlItem::GetItemPaddingLeft()
             }
         }
         if (imageSize.cx <= 0) {
-            imageSize.cx = pItemImage->GetImageCache()->GetWidth();
+            imageSize.cx = pItemImage->GetImageInfo()->GetWidth();
         }
         nPaddingLeft += imageSize.cx;
         nPaddingLeft += GetIconSpacing();

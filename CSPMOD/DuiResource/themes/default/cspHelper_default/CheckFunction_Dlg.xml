@@ -11,18 +11,25 @@
 	
 	<Class name="CF_ItemLable" max_width="320" valign="center" height="36" text_align="left,vcenter" halign="left" normal_text_color="#CSPColor_Content" font="system_14"/>
 	<Class name="CF_SupportedIcon" margin="27,0,27,0" valign="center" halign="center" width="36" height="36"  bkimage="check_green_36x.png" visible="false"/>
-	<Class name="CF_Checkbox_light"  valign="center" halign="center" height="36" width="90"
-		   normal_image="file='checkbox_24x.png' dest='33,6,57,30' source='0,24,24,48'"
-		   hot_image="file='checkbox_24x.png' dest='33,6,57,30' source='48,24,72,48'"
-	   selected_normal_image="file='checkbox_24x.png' dest='33,6,57,30' source='24,24,48,48'"
-		selected_hot_image="file='checkbox_24x.png' dest='33,6,57,30' source='72,24,96,48'"
+	<Class name="CF_Checkbox_light"  valign="center" halign="center" height="36" width="96"
+		   normal_image="file='CheckBox_24px.png' dest='36,6,60,30' source='0,24,24,48'"
+		   hot_image="file='CheckBox_24px.png' dest='36,6,60,30' source='48,24,72,48'"
+	   selected_normal_image="file='CheckBox_24px.png' dest='36,6,60,30' source='24,24,48,48'"
+		selected_hot_image="file='CheckBox_24px.png' dest='36,6,60,30' source='72,24,96,48'"
 		   />
-	<Class name="CF_Checkbox_dark"  valign="center" halign="center" height="36" width="90"
-		   normal_image="file='checkbox_24x.png' dest='33,6,57,30' source='0,0,24,24'"
-		   hot_image="file='checkbox_24x.png' dest='33,6,57,30' source='48,0,72,24'"
-	   selected_normal_image="file='checkbox_24x.png' dest='33,6,57,30' source='24,0,48,24'"
-		selected_hot_image="file='checkbox_24x.png' dest='33,6,57,30' source='72,0,96,24'"
+	<Class name="CF_Checkbox_dark"  valign="center" halign="center" height="36" width="96"
+		   normal_image="file='CheckBox_24px.png' dest='36,6,60,30' source='0,0,24,24'"
+		   hot_image="file='CheckBox_24px.png' dest='36,6,60,30' source='48,0,72,24'"
+	   selected_normal_image="file='CheckBox_24px.png' dest='36,6,60,30' source='24,0,48,24'"
+		selected_hot_image="file='CheckBox_24px.png' dest='36,6,60,30' source='72,0,96,24'"
 		   />
+
+	<!--<Class name="CF_Checkbox_dark" height="24" margin="0,8,0,8" font="system_14" normal_text_color="textNormalColor" width="400"
+	   normal_image="file='CheckBox_16px.png' dest='4,4,20,20' source='0,0,16,16'"
+	   hot_image="file='CheckBox_16px.png' dest='4,4,20,20' source='16,0,32,16'"
+	selected_normal_image="file='CheckBox_16px.png' dest='4,4,20,20' source='32,0,48,16'"
+	   text_padding="28,0,0,0" text_align="left,vcenter" />-->
+
 	<Class name="CF_Separator" height="1" bkcolor="#CSPColor_Separator"/>
 	
 	
@@ -43,7 +50,7 @@
 			<HBox height="auto">
 				<Control />
 				<Label class="CF_ItemLable" text_id="STRID_CHECKFUNCTIONS_SUPPORTED" width="90" text_align="center" height="26" margin="0,10,0,0"/>
-				<Label class="CF_ItemLable" text_id="STRID_CHECKFUNCTIONS_ENABLE" width="90"  text_align="center" height="26" margin="0,10,0,0"/>
+				<Label class="CF_ItemLable" text_id="STRID_CHECKFUNCTIONS_ENABLE" width="96"  text_align="center" height="26" margin="0,10,0,0"/>
 			</HBox>
 			<Control class="CF_Separator"/>
 			<HBox height="auto">
@@ -71,14 +78,14 @@
 				<Label class="CF_ItemLable" text_id="STRID_CHECKFUNCTIONS_PLUGIN_GAUSSBLUR"/>
 				<Control />
 				<Control class="CF_SupportedIcon" name="supportedIcon_plugin_gaussblur"/>
-				<Control width="90"/>
+				<Control width="96"/>
 			</HBox>
 			<Control class="CF_Separator"/>
 			<HBox height="auto">
 				<Label class="CF_ItemLable" text_id="STRID_CHECKFUNCTIONS_PLUGIN_MOTIONBLUR"/>
 				<Control />
 				<Control class="CF_SupportedIcon" name="supportedIcon_plugin_motionblur"/>
-				<Control width="90"/>
+				<Control width="96"/>
 			</HBox>
 			<Control class="CF_Separator"/>
 			<HBox height="auto">

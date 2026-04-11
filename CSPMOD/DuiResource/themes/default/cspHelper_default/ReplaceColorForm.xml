@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Window
+        caption="0,0,0,28" use_system_caption="false" snap_layout_menu="true" sys_menu="true" sys_menu_rect="0,0,36,36" 
+        shadow_type="default" shadow_attached="true" shadow_snap="true" layered_window="true"  size_box="4,4,4,4"
+        alpha="255" icon="public/caption/logo.ico" size="500,560" min_size="500,560" size_contain_shadow="true"
+		
+		xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		xmlns="http://tempuri.org/NIMDUISchema.xsd"
+		>
+
+
+	<Class name="option_eyedropper_dark" margin="2,2,2,2" border_round="4,4" group="eyedropper"  padding="2,2,2,2" 
+		   width="36" height="36" selected_normal_color="#CSPColor_Selected" hot_color="#CSPColor_BlueButton" />
+
+	<Class name="colorBlock" width="18" height="36" bkcolor="white"/>
+	<Class name="replaceColor_text" font="system_14" normal_text_color="#CSPColor_Content" valign="center"/>
+	<Class name="cspStyleSlider30pxHor" 	width="stretch" height="30" valign="center"
+					   bkimage="file='slider_bg.svg' corner='4,4,4,4'" padding="7,10,7,10"
+							 normal_color="#CSPColor_ControlBG" normal_color_margin="7,10,7,10" 
+							 hot_color="#CSPColor_Selected" hot_color_margin="7,10,7,10" fade_hot="false"
+					thumb_normal_image="file='slider_thumb.svg' width='16' height='30'" thumb_size="16,30"/>
+	<Class name="edit_num"  valign="center" width="50" height="24" border_size="1"
+						   border_round="2,2" bkcolor="#CSPColor_ControlBG" hot_border_color="#CSPColor_CaptionContent"
+					   normal_text_color="#CSPColor_Content" font="system_14" caret_color="#CSPColor_Content" select_all_on_focus="true"
+						   focus_border_color="#CSPColor_CaptionContent" number_only="true" want_return="true" text_align="hcenter,vcenter"  />
+	
+	
+	
+    <VBox bkcolor="#CSPColor_PanelBG" visible="true" cursor_type="arrow">    
+        <!-- 标题栏区域 -->
+        <HBox name="window_caption_bar" width="stretch" height="28" normal_color="#CSPColor_CaptionFocus" disabled_color="#CSPColor_CaptionNoFocus">
+			<Label name="text_Title" text_id="STRID_FILTERPLUGIN_REPLACECOLOR"  text_align="vcenter"  margin="8,0,8,0" valign="center"  normal_text_color="#CSPColor_CaptionContent" disabled_text_color="CSPColor_CaptionContentNoFocus" font="system_14"/>
+            <Control />
+
+            <!--<Button class="btn_wnd_close_11" height="stretch" width="40" name="closebtn" margin="0,0,0,2" tooltip_text="关闭"/>-->
+            <Button class="btn_wnd_close_11" height="stretch" width="40" name="btn_Close" margin="0,0,0,2" tooltip_text_id="STRING_CLOSE" normal_image="file='icon_close.svg' width='24' height='24' valign='center' halign='center'"/>
+        </HBox>
+
+		<!-- 工作区域，除了标题栏外的内容都放在这个大的Box区域 -->
+
+		<HBox >
+		
+		<VBox padding="12,10,8,16">
+			
+			<!--吸管图标区域-->
+			<HBox height="auto" margin="0,0,0,8">
+				<Option class="option_eyedropper_dark" bkimage="sip_normal.svg" selected="true" name="eyedropper_normal"/>
+				<Option class="option_eyedropper_dark" bkimage="sip_add.svg" name="eyedropper_add"/>
+				<Option class="option_eyedropper_dark" bkimage="sip_sub.svg" name="eyedropper_sub"/>
+				<Control />
+				<Label class="replaceColor_text" valign="center" margin="0,0,6,0" text_id="STRID_FILTERPLUGIN_REPLACECOLOR_SELECTEDCOLOR" />
+				
+				<Control class="colorBlock" name="color_selected"/>
+				<Control class="colorBlock" name="color_result"/>
+			</HBox>
+
+			<!--颜色容差滑块-->
+
+			<HBox height="auto" margin="0,0,0,8">
+				<Label class="replaceColor_text"  text_id="STRID_FILTERPLUGIN_REPLACECOLOR_TOLERANCE"/>
+				<!--增加滑块流畅度，将刻度放大-->
+				<!--<Slider name="slider_tolerance" max="20000" min="0" step="100" value="5000"
+						 width="stretch" height="24" valign="center"  normal_color_margin="0,4,0,10" normal_color_round="2,2"
+						 normal_border_color="#CSPColor_CaptionContent" normal_color="#CSPColor_ControlBG" border_size="1,1,1,1"
+					progress_bar_padding="0,4,0,10"
+						/>-->
+				<Slider class="cspStyleSlider30pxHor" name="slider_tolerance" max="20000" min="0" step="100" value="5000"
+
+						/>
+						  
+				<RichEdit class="edit_num" name="edit_tolerance" max_number="200" min_number="0" text="50"/>
+			</HBox>
+
+
+			<!--选区-->
+			<Label class="replaceColor_text"  text_id="STRID_FILTERPLUGIN_REPLACECOLOR_SELECTAREA"/>
+			<Control margin="4,4,4,4" name="ChildWindow"/>
+			<Control height="1" margin="0,8,0,12" bkcolor="#CSPColor_Separator"/>
+
+			
+			
+			<!--色相饱和度明度滑块   结果色-->
+			<HBox height="auto">
+				<VBox height="auto">
+				<HBox height="auto">
+					<Label class="replaceColor_text"  name="label_hue" text_id="STRID_FILTERPLUGIN_REPLACECOLOR_HUE"/>
+					<!--增加滑块流畅度，将刻度放大-->
+					<Slider class="cspStyleSlider30pxHor" name="slider_hue" max="18000" min="-18000" step="100" value="0"/>
+					<RichEdit class="edit_num" name="edit_hue" text="0" max_number="180" min_number="-180"/>
+				</HBox>
+				<HBox height="auto">
+					<Label class="replaceColor_text"  name="label_saturation" text_id="STRID_FILTERPLUGIN_REPLACECOLOR_SATURATION"/>
+					<Slider class="cspStyleSlider30pxHor" name="slider_saturation" max="10000" min="-10000" step="100" value="0"/>
+					<RichEdit class="edit_num" name="edit_saturation" text="0" max_number="100" min_number="-100"/>
+				</HBox>
+				<HBox height="auto">
+					<Label class="replaceColor_text"  name="label_value" text_id="STRID_FILTERPLUGIN_REPLACECOLOR_VALUE"/>
+					<Slider class="cspStyleSlider30pxHor" name="slider_value"  max="10000" min="-10000" step="100"  value="0"/>
+					<RichEdit class="edit_num" name="edit_value" text="0" max_number="100" min_number="-100"/>
+				</HBox>
+				<HBox height="auto" margin="0,8,0,0">
+					<Label class="replaceColor_text"  name="label_strength" text_id="STRID_FILTERPLUGIN_REPLACECOLOR_STRENGTH"/>
+					<Slider class="cspStyleSlider30pxHor" name="slider_strength"  max="10000" min="0" step="100"  value="10000"/>
+					<RichEdit class="edit_num" name="edit_strength" text="100" max_number="100" min_number="0"/>
+				</HBox>
+				</VBox>
+				<!--<VBox width="auto" valign="center">
+					<Control class="colorBlock"  name="color_result"/>
+					<Label class="replaceColor_text" text_id="STRID_FILTERPLUGIN_REPLACECOLOR_RESULT" halign="center"/>
+				</VBox>-->
+				
+				
+			</HBox>
+			
+			
+
+		</VBox>
+
+
+		<!--右侧按钮区-->
+			<VBox width="auto">
+				<Button margin="4,12,12,12" name="btn_OK" text_id="STRING_OK" width="90" height="30" border_size="1" border_round="2,2" border_color="#CSPColor_Separator" 
+									normal_text_color="#FFFFFF" bkcolor="#CSPColor_BlueButton" hot_color="#CSPColor_BlueButtonHot" pushed_color="#CSPColor_BlueButtonPush" fade_hot="false"/>
+				<Button margin="4,0,12,12" name="btn_Cancel" text_id="STRING_CANCEL" width="90" height="30" border_size="1" border_round="2,2" border_color="#CSPColor_Separator" 
+			normal_text_color="#CSPColor_Content" bkcolor="#CSPColor_ControlBG" hot_color="#CSPColor_Selected" pushed_color="#CSPColor_ButtonPush" fade_hot="false"/>
+				
+				<CheckBox margin="4,0,12,12" name="checkBox_preview" width="90" height="30" normal_text_color="#CSPColor_Content" 
+						  text_id="STRID_FILTERPLUGIN_PREVIEW" text_align="left,vcenter" text_padding="25,0,0,0"
+						    normal_image="file='control_bg.svg' width='20' height='20' dest='0,5,20,25' corner='4,4,4,4'"
+						     selected_normal_image="file='control_bg.svg' width='20' height='20' dest='0,5,20,25' corner='4,4,4,4'"
+						     hot_image="file='control_hot.svg' width='20' height='20' dest='0,5,20,25' corner='4,4,4,4'"
+						     selected_hot_image="file='control_hot.svg' width='20' height='20' dest='0,5,20,25' corner='4,4,4,4'"
+						   selected="true"
+						   selected_fore_normal_image="file='checkbox_check.svg' dest='0,5,20,25'"
+						  />
+			</VBox>
+		</HBox>
+		
+
+    </VBox>
+</Window>

@@ -36,6 +36,7 @@
     <ClCompile Include="AddressGenerator_CSPData.cpp" />
     <ClCompile Include="AddressGenerator_LayerObject.cpp" />
     <ClCompile Include="AddressGenerator_CSPHelper.cpp" />
+    <ClCompile Include="AddressGenerator_CustomFilter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DllInject.h" />

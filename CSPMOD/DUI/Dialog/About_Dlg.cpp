@@ -20,7 +20,8 @@ void About_Dlg::OnInitWindow()
 
 
     ui::Label* versionStr= static_cast<ui::Label*>(FindControl(L"text_version"));
-    std::string vstr = "c5.0.0-m2.1.7";
+    //std::string vstr = "c5.0.0-m2.2.0-beta";
+    std::string vstr = "c5.0.0-m2.2.1";
 
     versionStr->SetUTF8Text(vstr);
     

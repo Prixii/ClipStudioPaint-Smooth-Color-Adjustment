@@ -9,7 +9,7 @@
 
 #include"resource.h"
 
-
+#include"skia/include/utils/SkParse.h"
 
 
 void UIMiscThread::OnInit()
@@ -45,7 +45,7 @@ void UIMainThread::OnInit()
     init = true;
 
     // 启动杂事处理线程
-    misc_thread_.reset(new UIMiscThread(ui::kThreadMisc, L"Global Misc Thread"));
+    misc_thread_.reset(new UIMiscThread(ui::kThreadUser, L"Global Misc Thread"));
     misc_thread_->Start();
 
     // 获取资源路径，初始化全局参数
@@ -137,6 +137,37 @@ void UIMainThread::OnInit()
     
 
 #endif // _DEBUG
+
+
+
+
+
+
+
+
+
+
+    auto colorFindFullback = [](const char* colorName, size_t len, SkColor* out)->const char* {
+        ui::UiColor color = ui::GlobalManager::Instance().Color().ConvertToUiColor(ui::StringConvert::UTF8ToWString(colorName));
+        if (color.GetA() == 0)return nullptr;
+        *out = SkColorSetARGB(color.GetA(), color.GetR(), color.GetG(), color.GetB());
+        return colorName + len;
+        };
+
+    SkParse::SetColorFindFullback(colorFindFullback);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

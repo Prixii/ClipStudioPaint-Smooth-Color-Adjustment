@@ -86,6 +86,10 @@ public:
     */
     virtual void ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale) override;
 
+    /** 语言发生变化，刷新界面文字显示相关的内容
+    */
+    virtual void OnLanguageChanged() override;
+
     /** 计算文本区域大小（宽和高）
      *  @param [in] szAvailable 可用大小，不包含内边距，不包含外边距
      *  @return 控件的文本估算大小，包含内边距(Box)，不包含外边距
@@ -141,7 +145,7 @@ public:
 
     /** 设置文本水平对齐方式
     */
-    void SetHAlignType(HorAlignType alignType);
+    void SetTextHAlignType(HorAlignType alignType);
 
     /** 获取文本水平对齐方式
     */
@@ -149,7 +153,7 @@ public:
 
     /** 设置文本垂直对齐方式
     */
-    void SetVAlignType(VerAlignType alignType);
+    void SetTextVAlignType(VerAlignType alignType);
 
     /** 获取文本垂直对齐方式
     */
@@ -281,9 +285,9 @@ private:
     */
     std::vector<RichTextDataEx> m_textData;
 
-    /** 解析文本对应的DPI值
+    /** 解析文本对应的界面缩放比
     */
-    uint32_t m_nTextDataDPI;
+    uint32_t m_nTextDataDisplayScaleFactor;
 
     /** 超级链接的文本：常规文本颜色
     */

@@ -40,6 +40,9 @@ namespace ui
     #define  DUI_CTR_BOX                             (_T("Box"))
     #define  DUI_CTR_HBOX                            (_T("HBox"))
     #define  DUI_CTR_VBOX                            (_T("VBox"))
+    #define  DUI_CTR_HFLOWBOX                        (_T("HFlowBox"))
+    #define  DUI_CTR_VFLOWBOX                        (_T("VFlowBox"))
+
     #define  DUI_CTR_VTILE_BOX                       (_T("VTileBox"))
     #define  DUI_CTR_HTILE_BOX                       (_T("HTileBox"))
 
@@ -54,6 +57,8 @@ namespace ui
     #define  DUI_CTR_SCROLLBOX                       (_T("ScrollBox"))
     #define  DUI_CTR_HSCROLLBOX                      (_T("HScrollBox"))
     #define  DUI_CTR_VSCROLLBOX                      (_T("VScrollBox"))
+    #define  DUI_CTR_HFLOW_SCROLLBOX                 (_T("HFlowScrollBox"))
+    #define  DUI_CTR_VFLOW_SCROLLBOX                 (_T("VFlowScrollBox"))
     #define  DUI_CTR_HTILE_SCROLLBOX                 (_T("HTileScrollBox"))
     #define  DUI_CTR_VTILE_SCROLLBOX                 (_T("VTileScrollBox"))
 
@@ -72,6 +77,8 @@ namespace ui
     #define  DUI_CTR_VIRTUAL_VTILE_LISTBOX           (_T("VirtualVTileListBox"))
 
     #define  DUI_CTR_TABBOX                          (_T("TabBox"))
+    #define  DUI_CTR_GRIDBOX                         (_T("GridBox"))
+    #define  DUI_CTR_GRID_SCROLLBOX                  (_T("GridScrollBox"))
 
     #define  DUI_CTR_TREENODE                        (_T("TreeNode"))
     #define  DUI_CTR_TREEVIEW                        (_T("TreeView"))
@@ -120,63 +127,23 @@ namespace ui
     #define  DUI_CTR_BUTTON_RESTORE                  (_T("restorebtn"))
     #define  DUI_CTR_BUTTON_FULLSCREEN               (_T("fullscreenbtn"))
 
-    //EventType事件类型对应的字符串定义
-    #define  EVENTSTR_ALL                (_T("all"))
-    #define  EVENTSTR_KEYDOWN            (_T("keydown"))
-    #define  EVENTSTR_KEYUP              (_T("keyup"))
-    #define  EVENTSTR_CHAR               (_T("char"))
-    
-    #define  EVENTSTR_SETFOCUS           (_T("setfocus"))
-    #define  EVENTSTR_KILLFOCUS          (_T("killfocus"))
-    #define  EVENTSTR_SETCURSOR          (_T("setcursor"))
-
-    #define  EVENTSTR_MOUSEMOVE          (_T("mousemove"))
-    #define  EVENTSTR_MOUSEENTER         (_T("mouseenter"))
-    #define  EVENTSTR_MOUSELEAVE         (_T("mouseleave"))
-    #define  EVENTSTR_MOUSEHOVER         (_T("mousehover"))
-
-    #define  EVENTSTR_BUTTONDOWN         (_T("buttondown"))
-    #define  EVENTSTR_BUTTONUP           (_T("buttonup"))
-    #define  EVENTSTR_DOUBLECLICK        (_T("doubleclick"))
-    #define  EVENTSTR_RBUTTONDOWN        (_T("rbuttondown"))
-    #define  EVENTSTR_RBUTTONUP          (_T("rbuttonup"))
-    #define  EVENTSTR_RDOUBLECLICK       (_T("rdoubleclick"))
-
-    #define  EVENTSTR_SELECT             (_T("select"))
-    #define  EVENTSTR_UNSELECT           (_T("unselect"))
-
-    #define  EVENTSTR_CHECKED            (_T("checked"))
-    #define  EVENTSTR_UNCHECK            (_T("uncheck"))
-    
-    #define  EVENTSTR_TAB_SELECT         (_T("tab_select"))
-
-    #define  EVENTSTR_MENU               (_T("menu"))
-
-    #define  EVENTSTR_EXPAND             (_T("expand"))
-    #define  EVENTSTR_COLLAPSE           (_T("collapse"))
-
-    #define  EVENTSTR_SCROLLWHEEL        (_T("scrollwheel"))
-    #define  EVENTSTR_SCROLLCHANGE       (_T("scrollchange"))
-
-    #define  EVENTSTR_VALUECHANGE        (_T("valuechange"))
-    #define  EVENTSTR_RETURN             (_T("return"))
-    #define  EVENTSTR_TAB                (_T("tab"))
-    #define  EVENTSTR_WINDOWCLOSE        (_T("windowclose"))
+    class Control;
+    class Image;
 
     //水平对齐方式
-    enum HorAlignType: int8_t
+    enum class HorAlignType: int8_t
     {
-        kHorAlignLeft   = 0,    // 靠左对齐
-        kHorAlignCenter = 1,    // 水平居中
-        kHorAlignRight  = 2     // 靠右对齐
+        kAlignLeft   = 0,    // 靠左对齐
+        kAlignCenter = 1,    // 水平居中
+        kAlignRight  = 2     // 靠右对齐
     };
 
     //垂直对齐方式
-    enum VerAlignType: int8_t
+    enum class VerAlignType: int8_t
     {
-        kVerAlignTop    = 0,    // 顶端对齐
-        kVerAlignCenter = 1,    // 垂直居中
-        kVerAlignBottom = 2     // 底部对齐
+        kAlignTop    = 0,    // 顶端对齐
+        kAlignCenter = 1,    // 垂直居中
+        kAlignBottom = 2     // 底部对齐
     };
 
     //控件图片类型
@@ -196,7 +163,9 @@ namespace ui
         kControlStateNormal     = 0,    // 普通状态
         kControlStateHot        = 1,    // 悬停状态
         kControlStatePushed     = 2,    // 按下状态
-        kControlStateDisabled   = 3     // 禁用状态
+        kControlStateDisabled   = 3,    // 禁用状态
+
+        kControlStateCount      = 4     // 状态个数
     };
 
     //控件动画类型
@@ -213,12 +182,34 @@ namespace ui
         kAnimationInoutYFromBottom  = 8,    //控件的Y坐标变化动画，从下侧
     };
 
-    //GIF图片帧类型
-    enum GifFrameType: int8_t
+    //图片动画帧类型
+    enum class AnimationImagePos: int8_t
     {
-        kGifFrameFirst   = 0,   // 第一帧    
-        kGifFrameCurrent = 1,   // 当前帧        
-        kGifFrameLast    = 2    // 最后一帧
+        kFrameFirst   = 0,   // 第一帧    
+        kFrameCurrent = 1,   // 当前帧        
+        kFrameLast    = 2    // 最后一帧
+    };
+
+    //图片动画的播放状态
+    struct ImageAnimationStatus
+    {
+        //图片的名称：XML设置中，图片属性中的name字段值，用于区别是那张图片资源
+        DString m_name;
+
+        //当前动画图片是否为背景图片
+        bool m_bBkImage;
+
+        //图片总帧数
+        int32_t m_nFrameCount;
+
+        //图片当前播放帧索引号（从0开始的序号）
+        int32_t m_nFrameIndex;
+
+        //当前帧播放持续时间，毫秒
+        int32_t m_nFrameDelayMs;
+
+        //循环播放的次数(正整数表示循环播放的次数，-1表示一直循环播放)
+        int32_t m_nLoopCount;
     };
 
     //光标: Windows平台可参考：https://learn.microsoft.com/zh-cn/windows/win32/menurc/about-cursors
@@ -276,7 +267,19 @@ namespace ui
         std::vector<DString> m_fileList;    // 在拖放操作中包含的文本内容，每个元素代表一个文件路径
     };
 
-    //定义所有消息类型
+    //图片加载或者解码结果
+    struct ImageDecodeResult
+    {
+        Control* m_pControl;    //图片关联控件
+        Image* m_pImage;        //图片资源接口
+        DString m_imageFilePath;//图片路径
+        DString m_imageName;    //图片名称，唯一ID
+        bool m_bBkImage;        //该图片是否为背景图片
+        bool m_bLoadError;      //该图片是否存在加载错误
+        bool m_bDecodeError;    //该图片是否存在数据解码错误
+    };
+
+    //定义所有消息类型（注意事项：类型定义变化时，需要同步EventArgs.cpp中的InitEventStringMap函数，同步消息类型与消息名称的映射关系）
     enum EventType: int8_t
     {
         kEventNone,
@@ -340,7 +343,7 @@ namespace ui
         kEventUnSelect,             //CheckBox类、Option类、ListBox类、Combo类：当变成非选中状态时触发
 
         //勾选/取消勾选
-        kEventChecked,              //CheckBox类：当变成Checked状态时触发
+        kEventCheck,                //CheckBox类：当变成Checked状态时触发
         kEventUnCheck,              //CheckBox类：当变成UnCheck状态时触发
 
         //TAB页面选择
@@ -351,24 +354,26 @@ namespace ui
         kEventCollapse,             //TreeNode类：当树节点收起时触发
 
         kEventZoom,                 //RichEdit类：当缩放比例发生变化时，wParam表示缩放百分比，比如200表示200%
-        kEventTextChange,           //RichEdit类：当文本内容发生变化时触发
-        kEventSelChange,            //ListCtrl类：选择项发生变化，RichEdit类：当文本选择内容发生变化时触发
+        kEventTextChanged,           //RichEdit类：当文本内容发生变化时触发
+        kEventSelChanged,            //ListCtrl类：选择项发生变化，RichEdit类：当文本选择内容发生变化时触发
         kEventReturn,               //ListCtrl、VirtualListBox、ListBoxItem、RichEdit、AddressBar类：当收到回车键时触发
         kEventEsc,                  //RichEdit类、AddressBar类：当收到ESC键时触发
         kEventTab,                  //RichEdit类：在WantTab为false时，当收到TAB键时触发
         kEventLinkClick,            //RichEdit类、RichText类：当点击到超级链接的数据上时触发, 可以通过WPARAM获取点击的URL，类型为const DStringW::value_type*
 
-        kEventScrollChange,         //ScrollBox类：当滚动条位置发生变化时触发
-        kEventValueChange,          //DateTime、Slider类：当值发生变化时触发, Slider类：WPARAM是新值，LPARAM是旧值
-        kEventResize,               //Control类：当控件的大小和位置发生变化时触发
-        kEventVisibleChange,        //Control类：当控件的Visible属性发生变化时触发, WPARAM是新状态(1表示可见，0表示不可见)
-        kEventStateChange,          //Control类：当控件的State属性发生变化时触发, WPARAM是新状态，LPARAM是旧状态
+        kEventScrollPosChanged,         //ScrollBox类：当滚动条位置发生变化时触发
+        kEventValueChanged,          //DateTime、Slider类：当值发生变化时触发, Slider类：WPARAM是新值，LPARAM是旧值
+        kEventPosChanged,           //Control类：当控件的位置发生变化时触发
+        kEventSizeChanged,          //Control类：当控件的大小发生变化时触发
+        kEventVisibleChanged,        //Control类：当控件的Visible属性发生变化时触发, WPARAM是新状态(1表示可见，0表示不可见)
+        kEventStateChanged,          //Control类：当控件的State属性发生变化时触发, WPARAM是新状态，LPARAM是旧状态
         kEventSelectColor,          //ColorPicker类：当选择了新颜色时触发, WPARAM是新的颜色值，LPARAM是旧的颜色值
 
         kEventSplitDraged,          //Split类：通过拖动操作调整了控件的大小，WPARAM是第一个控件接口，LPARAM是第二个控件接口
 
         kEventEnterEdit,            //ListCtrl类：进入编辑状态, wParam 是接口：ListCtrlEditParam*
         kEventLeaveEdit,            //ListCtrl类：退出编辑状态, wParam 是接口：ListCtrlEditParam*
+        kEventDataItemCountChanged, //ListCtrl类：数据项个数发生变化, wParam是新的个数(size_t), lParam是旧的个数(size_t)
 
         kEventPathChanged,          //AddressBar类：当路径方式变化时触发
         kEventPathClick,            //AddressBar类：当用户点击路径按钮时触发
@@ -382,7 +387,19 @@ namespace ui
                                     //lParam 代表关联数据：当wParam为kControlDropTypeWindows时，lParam是ControlDropData_Windows的指针
                                     //                   当wParam为kControlDropTypeSDL时，lParam是ControlDropData_SDL的指针
 
-        kEventLast                  //无使用者
+        kEventImageAnimationStart,      // 开始播放图片动画(背景图片)：wParam 为数据指针：ui::ImageAnimationStatus*
+        kEventImageAnimationPlayFrame,  // 图片动画播放某帧(背景图片)：wParam 为数据指针：ui::ImageAnimationStatus*
+        kEventImageAnimationStop,       // 停止播放图片动画(背景图片)：wParam 为数据指针：ui::ImageAnimationStatus*
+
+                                        //ui::ControlLoadingStatus 在 "duilib/Core/ControlLoading.h"中定义
+        kEventLoadingStart,             //控件开始加载状态，此时控件变成Disabled状态：wParam 为数据指针：ui::ControlLoadingStatus*
+        kEventLoading,                  //控件处于加载中状态，定时回调：             wParam 为数据指针：ui::ControlLoadingStatus*
+        kEventLoadingStop,              //控件结束加载状态，此时控件变成Enabled状态： wParam 为数据指针：ui::ControlLoadingStatus*
+
+        kEventImageLoad,                //图片加载完成事件，wParam 为数据指针：ui::ImageDecodeResult*
+        kEventImageDecode,              //图片解码完成事件，wParam 为数据指针：ui::ImageDecodeResult*
+
+        kEventLast                      //无使用者
     };
 
     /** 热键组合键标志位

@@ -1,14 +1,13 @@
 #ifndef UI_CORE_BOX_H_
 #define UI_CORE_BOX_H_
 
-#include "duilib/Box/Layout.h"
+#include "duilib/Layout/Layout.h"
 #include "duilib/Core/Control.h"
 
 namespace ui 
 {
-
-/////////////////////////////////////////////////////////////////////////////////////
-//
+/** 容器基类(Container)
+*/
 class UILIB_API Box : public Control
 {
     typedef Control BaseClass;
@@ -68,6 +67,10 @@ public:
     * @param [in] nNewDpiScale 新的DPI缩放百分比，与Dpi().GetScale()的值一致
     */
     virtual void ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale) override;
+
+    /** 语言发生变化，刷新界面文字显示相关的内容
+    */
+    virtual void OnLanguageChanged() override;
 
 public:
     /** @name 操作子控件(item)相关的方法

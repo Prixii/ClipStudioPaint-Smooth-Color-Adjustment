@@ -12,7 +12,7 @@ Slider::Slider(Window* pWindow) :
     m_thumbStateImage(),
     m_rcProgressBarPadding()
 {
-    SetTextStyle(TEXT_SINGLELINE | TEXT_CENTER, false);
+    SetTextStyle(TEXT_SINGLELINE | TEXT_HCENTER, false);
 }
 
 DString Slider::GetType() const { return DUI_CTR_SLIDER; }
@@ -47,7 +47,7 @@ UiRect Slider::GetProgressPos()
 
     return rc;
 }
-
+#if 0
 void Slider::HandleEvent(const EventArgs& msg)
 {
     if (IsDisabledEvents(msg)) {
@@ -102,7 +102,7 @@ void Slider::HandleEvent(const EventArgs& msg)
                 SetValue(newValue);
             }
         }
-        SendEvent(kEventValueChange, (WPARAM)GetValue(), (LPARAM)oldValue);
+        SendEvent(kEventValueChanged, (WPARAM)GetValue(), (LPARAM)oldValue);
         Invalidate();
         return;
     }
@@ -111,12 +111,12 @@ void Slider::HandleEvent(const EventArgs& msg)
         int32_t detaValue = msg.eventData;
         if (detaValue > 0) {
             SetValue(GetValue() + GetChangeStep());
-            SendEvent(kEventValueChange, (WPARAM)GetValue(), (LPARAM)oldValue);
+            SendEvent(kEventValueChanged, (WPARAM)GetValue(), (LPARAM)oldValue);
             return;
         }
         else {
             SetValue(GetValue() - GetChangeStep());
-            SendEvent(kEventValueChange, (WPARAM)GetValue(), (LPARAM)oldValue);
+            SendEvent(kEventValueChanged, (WPARAM)GetValue(), (LPARAM)oldValue);
             return;
         }
     }
@@ -150,7 +150,7 @@ void Slider::HandleEvent(const EventArgs& msg)
                     SetValue(newValue);
                 }
             }
-            SendEvent(kEventValueChange, (WPARAM)GetValue(), (LPARAM)oldValue);
+            SendEvent(kEventValueChanged, (WPARAM)GetValue(), (LPARAM)oldValue);
             Invalidate();
         }
         return;
@@ -158,7 +158,7 @@ void Slider::HandleEvent(const EventArgs& msg)
 
     Progress::HandleEvent(msg);
 }
-
+#endif
 void Slider::SetAttribute(const DString& strName, const DString& strValue)
 {
     if (strName == _T("step")) {
@@ -193,8 +193,7 @@ void Slider::SetAttribute(const DString& strName, const DString& strValue)
 
 void Slider::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
 {
-    ASSERT(nNewDpiScale == Dpi().GetScale());
-    if (nNewDpiScale != Dpi().GetScale()) {
+    if (!Dpi().CheckDisplayScaleFactor(nNewDpiScale)) {
         return;
     }
     UiSize szThumbSize = GetThumbSize();
@@ -206,28 +205,34 @@ void Slider::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
 
 void Slider::PaintBkColor(IRender* pRender)
 {
+    const UiRect rcOldPaintRect = GetPaintRect();
+    const UiRect rcOldRect = GetRect();
+
     UiRect rc = GetRect();
     const UiPadding& padding = m_rcProgressBarPadding;
     rc.Deflate(padding);
     SetRect(rc);
 
-    UiRect painttRect = GetPaintRect();
-    painttRect.Deflate(padding);
-    SetPaintRect(painttRect);
+    UiRect paintRect = GetPaintRect();
+    paintRect.Deflate(padding);
+    SetPaintRect(paintRect);
 
     Control::PaintBkColor(pRender);
 
-    painttRect = GetPaintRect();
-    painttRect.Inflate(padding);
-    SetPaintRect(painttRect);
+    paintRect = GetPaintRect();
+    paintRect.Inflate(padding);
+    SetPaintRect(paintRect);
 
-    rc = GetRect();
-    rc.Inflate(padding);
-    SetRect(rc);
+    //恢复原值
+    SetRect(rcOldRect);
+    SetPaintRect(rcOldPaintRect);
 }
 
 void Slider::PaintStateImages(IRender* pRender)
 {
+    const UiRect rcOldPaintRect = GetPaintRect();
+    const UiRect rcOldRect = GetRect();
+
     UiRect rc = GetRect();
     const UiPadding& padding = m_rcProgressBarPadding;
     rc.Deflate(padding);
@@ -235,9 +240,9 @@ void Slider::PaintStateImages(IRender* pRender)
 
     Progress::PaintStateImages(pRender);
 
-    rc = GetRect();
-    rc.Inflate(padding.left, padding.top, padding.right, padding.bottom);
-    SetRect(rc);
+    //恢复原值
+    SetRect(rcOldRect);
+    SetPaintRect(rcOldPaintRect);
 
     UiRect rcThumb = GetThumbRect();
     rcThumb.left -= GetRect().left;

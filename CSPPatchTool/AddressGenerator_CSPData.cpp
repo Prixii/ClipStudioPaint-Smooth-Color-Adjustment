@@ -94,8 +94,127 @@ void AddressGenerator::PushCSPDataAddr()
 
 
 
+	//设置颜色的函数地址（基于吸管）
+	//45 8B CF 4C 8D 45 48 48 8D 55 E0 E8 ?? ?? ?? ?? 85 DB 74 0C 48 8D 4C 24 40 E8 ?? ?? ?? ?? EB
+	{
+		//使用外部特征
+		uint8_t setColorFuncFeature[] = {
+			0x45,0x8B,0xCF,0x4C,0x8D,0x45,0x48,0x48,0x8D,0x55,0xE0,//11
+			0xE8,BYTEWILDCARD, BYTEWILDCARD,BYTEWILDCARD,BYTEWILDCARD,//5
+			0x85,0xDB,0x74,0x0C,0x48,0x8D,0x4C,0x24,0x40,//9
+			0xE8,BYTEWILDCARD, BYTEWILDCARD,BYTEWILDCARD,BYTEWILDCARD,//5
+			0xEB//1
+		};
+
+		bool success = false;
+		for (uint32_t i = 0; i < _codeMemSize - sizeof(setColorFuncFeature); i++)
+		{
+			if (_MatchFeatureCode(_codeMem + i, setColorFuncFeature, sizeof(setColorFuncFeature)))
+			{
+				//此代码最后的E8即是调用地址
+				uint32_t off = *(uint32_t*)(_codeMem + i + 11+5+9+1);
+
+				SDL_Log("CSPPaintColor SetColor Func Finded.");
+				addrJson["CspAddressRVA"]["CSPPaintColor_SetColor_Func"] = _VA + i + 11+5+9+ 5 + off;
+				success = true;
+				break;
+			}
+		}
+		if (!success)
+			SDL_LogError(SDL_LogCategory::SDL_LOG_CATEGORY_ERROR, "CSPPaintColor SetColor Func Not Found!");
+	}
+
+	//获取主副色所用的对象、设置主副色、释放查询对象
+	{
+		//3B C3 41 0F 4E DC 8B D3 48 8D 8C 24 ? ? ? ? ? ? ? ? E8 ? ? ? ? ? ? ? ? 90 48 8D 94 24 ? ? ? ? ? ? ? ? 8B CB E8 ? ? ? ? ? ? ? ? 44 8B EE 48 8D 8C 24 ? ? ? ? ? ? ? ? E8 ? ? ? ? ? ? ? ?
+
+		uint8_t GetSetColorTypeFeature[] = {
+		0x3B,0xC3,0x41,0x0F,0x4E,0xDC,0x8B,0xD3,//8
+		0x48,0x8D,0x8C,0x24,BYTEWILDCARD, BYTEWILDCARD,BYTEWILDCARD,BYTEWILDCARD ,//8
+		0xE8,BYTEWILDCARD, BYTEWILDCARD,BYTEWILDCARD,BYTEWILDCARD ,//5
+		0x90,//1
+		0x48,0x8D,0x94,0x24,BYTEWILDCARD, BYTEWILDCARD,BYTEWILDCARD,BYTEWILDCARD,//8
+		0x8B,0xCB,//2
+		0xE8,BYTEWILDCARD, BYTEWILDCARD,BYTEWILDCARD,BYTEWILDCARD ,//5
+		0x44,0x8B,0xEE,//3
+		0x48,0x8D,0x8C,0x24,BYTEWILDCARD, BYTEWILDCARD,BYTEWILDCARD,BYTEWILDCARD,//8
+		0xE8,BYTEWILDCARD, BYTEWILDCARD,BYTEWILDCARD,BYTEWILDCARD//5
+		};
+
+		//每个0x48,0x8D,0x8C,0x24,BYTEWILDCARD, BYTEWILDCARD,BYTEWILDCARD,BYTEWILDCARD 指向的数值相等
+		bool success = false;
+		for (uint32_t i = 0; i < _codeMemSize - sizeof(GetSetColorTypeFeature); i++)
+		{
+			if (_MatchFeatureCode(_codeMem + i, GetSetColorTypeFeature, sizeof(GetSetColorTypeFeature)))
+			{
+				uint32_t val1= *(uint32_t*)(_codeMem + i + 8 + 4 );
+				uint32_t val2= *(uint32_t*)(_codeMem + i + 8 + 8+5+1+4 );
+				uint32_t val3= *(uint32_t*)(_codeMem + i + 8 + 8+5+1+8+2+5+3+4 );
+				if (val1 == val2 && val1 == val3)
+				{
+					
+					uint32_t off = *(uint32_t*)(_codeMem + i + 8 + 8 + 1);
+					SDL_Log("CSPPaintColor GetColorHost Func Finded.");
+					addrJson["CspAddressRVA"]["CSPPaintColor_GetColorHost_Func"] = _VA + i + 8 + 8 + 5 + off;
+					
+					off = *(uint32_t*)(_codeMem + i + 8 + 8 + 5+1+8+2+1);
+					SDL_Log("CSPPaintColor SetWorkingColor Func Finded.");
+					addrJson["CspAddressRVA"]["CSPPaintColor_SetWorkingColor_Func"] = _VA + i + 8 + 8 + 5 + 1 + 8 + 2 + 5 + off;
+					
+					off = *(uint32_t*)(_codeMem + i + 8 + 8 + 5+1+8+2+5+3+8+1);
+					SDL_Log("CSPPaintColor ReleaseColorHost Func Finded.");
+					addrJson["CspAddressRVA"]["CSPPaintColor_ReleaseColorHost_Func"] = _VA + i + 8 + 8 + 5 + 1 + 8 + 2 + 5 + 3 + 8 + 5 + off;
 
 
+					success = true;
+					break;
 
+				}
+
+			}
+		}
+		if (!success)
+		{
+			SDL_LogError(SDL_LogCategory::SDL_LOG_CATEGORY_ERROR, "CSPPaintColor GetColorHost Func Not Found!");
+			SDL_LogError(SDL_LogCategory::SDL_LOG_CATEGORY_ERROR, "CSPPaintColor SetWorkingColor Func Not Found!");
+			SDL_LogError(SDL_LogCategory::SDL_LOG_CATEGORY_ERROR, "CSPPaintColor ReleaseColorHost Func Not Found!");
+
+		}
+
+	}
+	{
+	//一个监听颜色变化的函数，用于在色轮中同步来自CSP的修改
+	
+		//48 8B 87 80 02 00 00 48 89 44 24 70 48 8B 8F 88 02 00 00 48 89 4C 24 78 48 85 C9 74 07 8B C6 F0 0F C1 41 08 4C 8D 44 24 40 8B D3 48 8D 4C 24 70 E8 ? ? ? ? ? ? ? ? FF C3 41 3B DC
+	
+
+
+		uint8_t onColorChangedFuncFeature[] = {
+			0X48,0x8B,0x87,0x80,0x02,0x00,0x00,0x48,0x89,0x44,//10
+			0x24,0x70,0x48,0x8B,0x8F,0x88,0x02,0x00,0x00,0x48,//10
+			0x89,0x4C,0x24,0x78,0x48,0x85,0xC9,0x74,0x07,0x8B,//10
+			0xC6,0xF0,0x0F,0xC1,0x41,0x08,0x4C,0x8D,0x44,0x24,//10
+			0x40,0x8B,0xD3,0x48,0x8D,0x4C,0x24,0x70,//8
+			0xE8,BYTEWILDCARD, BYTEWILDCARD,BYTEWILDCARD,BYTEWILDCARD,//5
+			0xFF,0xC3,0x41,0x3B,0xDC
+		};
+
+		bool success = false;
+		for (uint32_t i = 0; i < _codeMemSize - sizeof(onColorChangedFuncFeature); i++)
+		{
+			if (_MatchFeatureCode(_codeMem + i, onColorChangedFuncFeature, sizeof(onColorChangedFuncFeature)))
+			{
+				//此代码最后的E8即是调用地址
+				uint32_t off = *(uint32_t*)(_codeMem + i + 10 + 10 + 10  +10+8+1);
+
+				SDL_Log("CSPPaintColor OnColorChanged Func Finded.");
+				addrJson["CspAddressRVA"]["CSPPaintColor_OnColorChanged_Func"] = _VA + i + 10 + 10 + 10 + 10 + 8 + 5 + off;
+				success = true;
+				break;
+			}
+		}
+		if (!success)
+			SDL_LogError(SDL_LogCategory::SDL_LOG_CATEGORY_ERROR, "CSPPaintColor OnColorChanged Func Not Found!");
+	}
 
 }

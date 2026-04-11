@@ -1,7 +1,7 @@
 
 //#include"AppContext.h"
 #include"AppSettings.h"
-
+#include"DUI/DuiCommon.h"
 #include"Util/Util.h"
 
 
@@ -14,7 +14,8 @@
 #include"ScriptAction_ApplyEffects.h"
 
 AppSettings AppSettings::ins;
-SDL_Color AppSettings::_defaultBackgroundColor = { 255,255,255,0 };//低到高 rgba
+//SDL_Color AppSettings::_defaultBackgroundColor = { 255,255,255,0 };//低到高 rgba
+//SDL_Rect AppSettings::_defalutReplaceWindowRect = { 0,0,0,0 };//低到高 rgba
 
 
 //不要修改文件名？
@@ -81,32 +82,35 @@ else \
 }
 
 	{
-		if (configJson.isMember("FunctionEnable") && configJson["FunctionEnable"].isMember("HSV") && _Is_bool_Type(configJson["FunctionEnable"]["HSV"])) {
-			SetFunctionEnableHSV(_Get_bool(configJson["FunctionEnable"]["HSV"]));
-		}
-		else {
-			SetFunctionEnableHSV(_FunctionEnableHSV);
-		} if (configJson.isMember("FunctionEnable") && configJson["FunctionEnable"].isMember("ColorBalance") && _Is_bool_Type(configJson["FunctionEnable"]["ColorBalance"])) {
-			SetFunctionEnableColorBalance(_Get_bool(configJson["FunctionEnable"]["ColorBalance"]));
-		}
-		else {
-			SetFunctionEnableColorBalance(_FunctionEnableColorBalance);
-		} if (configJson.isMember("FunctionEnable") && configJson["FunctionEnable"].isMember("ToneCurve") && _Is_bool_Type(configJson["FunctionEnable"]["ToneCurve"])) {
-			SetFunctionEnableToneCurve(_Get_bool(configJson["FunctionEnable"]["ToneCurve"]));
-		}
-		else {
-			SetFunctionEnableToneCurve(_FunctionEnableToneCurve);
-		} if (configJson.isMember("FunctionEnable") && configJson["FunctionEnable"].isMember("TimeLapseExport") && _Is_bool_Type(configJson["FunctionEnable"]["TimeLapseExport"])) {
-			SetFunctionEnableTimeLapseExport(_Get_bool(configJson["FunctionEnable"]["TimeLapseExport"]));
-		}
-		else {
-			SetFunctionEnableTimeLapseExport(_FunctionEnableTimeLapseExport);
-		} if (configJson.isMember("FunctionEnable") && configJson["FunctionEnable"].isMember("Script_ApplyEffects") && _Is_bool_Type(configJson["FunctionEnable"]["Script_ApplyEffects"])) {
-			SetFunctionEnableScript_ApplyEffects(_Get_bool(configJson["FunctionEnable"]["Script_ApplyEffects"]));
-		}
-		else {
-			SetFunctionEnableScript_ApplyEffects(_FunctionEnableScript_ApplyEffects);
-		}
+		//if (configJson.isMember("FunctionEnable") && configJson["FunctionEnable"].isMember("HSV") && _Is_bool_Type(configJson["FunctionEnable"]["HSV"])) {
+		//	SetFunctionEnableHSV(_Get_bool(configJson["FunctionEnable"]["HSV"]));
+		//}
+		//else {
+		//	SetFunctionEnableHSV(_FunctionEnableHSV);
+		//} if (configJson.isMember("FunctionEnable") && configJson["FunctionEnable"].isMember("ColorBalance") && _Is_bool_Type(configJson["FunctionEnable"]["ColorBalance"])) {
+		//	SetFunctionEnableColorBalance(_Get_bool(configJson["FunctionEnable"]["ColorBalance"]));
+		//}
+		//else {
+		//	SetFunctionEnableColorBalance(_FunctionEnableColorBalance);
+		//} if (configJson.isMember("FunctionEnable") && configJson["FunctionEnable"].isMember("ToneCurve") && _Is_bool_Type(configJson["FunctionEnable"]["ToneCurve"])) {
+		//	SetFunctionEnableToneCurve(_Get_bool(configJson["FunctionEnable"]["ToneCurve"]));
+		//}
+		//else {
+		//	SetFunctionEnableToneCurve(_FunctionEnableToneCurve);
+		//} if (configJson.isMember("FunctionEnable") && configJson["FunctionEnable"].isMember("TimeLapseExport") && _Is_bool_Type(configJson["FunctionEnable"]["TimeLapseExport"])) {
+		//	SetFunctionEnableTimeLapseExport(_Get_bool(configJson["FunctionEnable"]["TimeLapseExport"]));
+		//}
+		//else {
+		//	SetFunctionEnableTimeLapseExport(_FunctionEnableTimeLapseExport);
+		//} if (configJson.isMember("FunctionEnable") && configJson["FunctionEnable"].isMember("Script_ApplyEffects") && _Is_bool_Type(configJson["FunctionEnable"]["Script_ApplyEffects"])) {
+		//	SetFunctionEnableScript_ApplyEffects(_Get_bool(configJson["FunctionEnable"]["Script_ApplyEffects"]));
+		//}
+		//else {
+		//	SetFunctionEnableScript_ApplyEffects(_FunctionEnableScript_ApplyEffects);
+		//}
+		CATTUBER_APPSETTINGS_LIST(APPSETTINGS_Load)
+		
+
 	}
 
 #undef APPSETTINGS_Load
@@ -133,33 +137,51 @@ else \
 bool AppSettings::Save()
 {
 
-	//构建Json
-	Json::Value root;
+	static bool needSave = false;
 
-	//_Save_bool_Type(root["Window"]["Top"], _WindowTop);
+	//防止频繁保存，这里用POSTASK的方式进行保存
+	needSave = true;
+	ui::GlobalManager::Instance().Thread().PostTask(ui::kThreadUI, []() {
+		
+		if (!needSave)return;
+		
+		
+		// 
+//构建Json
+		Json::Value root;
+
+		//_Save_bool_Type(root["Window"]["Top"], _WindowTop);
 #define APPSETTINGS_Save(settingGroup,setting,type,defaultValue) \
-	_Save_##type##_Type(root[#settingGroup][#setting],_##settingGroup##setting);
-	{ CATTUBER_APPSETTINGS_LIST(APPSETTINGS_Save) }
+	ins._Save_##type##_Type(root[#settingGroup][#setting],ins._##settingGroup##setting);
+		{ CATTUBER_APPSETTINGS_LIST(APPSETTINGS_Save) }
 #undef APPSETTINGS_Save
 
 
-	////特殊处理，如果不保存Lock状态的情况下，保存为false
-	//if (!root["Window"]["LockSave"].asBool())
-	//{
-	//	root["Window"]["Lock"] = false;
-	//}
+		////特殊处理，如果不保存Lock状态的情况下，保存为false
+		//if (!root["Window"]["LockSave"].asBool())
+		//{
+		//	root["Window"]["Lock"] = false;
+		//}
 
-	//将json写入文件
-	//需要判断是否可写
-	std::string settingsFilePath = prefpath;
-	settingsFilePath += _SETTINGS_FILE_NAME;
+		//将json写入文件
+		//需要判断是否可写
+		std::string settingsFilePath = ins.prefpath;
+		settingsFilePath += _SETTINGS_FILE_NAME;
 
-	if (!util::SaveJsonToFile(root, settingsFilePath.c_str()))
-	{
-		SDL_LogError(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, "Save Settings Failed!");
-		return false;
-	}
-	SDL_LogInfo(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, "Settings Saved.");
+		if (!util::SaveJsonToFile(root, settingsFilePath.c_str()))
+		{
+			SDL_LogError(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, "Save Settings Failed!");
+			return;
+		}
+		SDL_LogInfo(SDL_LogCategory::SDL_LOG_CATEGORY_APPLICATION, "Settings Saved.");
+		needSave = false;
+
+		});
+
+	
+
+	
+
 	return true;
 
 
@@ -330,7 +352,25 @@ void AppSettings::_OnFunctionEnableScript_ApplyEffectsChange(const bool& value)
 	}
 }
 
+void AppSettings::_OnReplaceColorToleranceChange(const int64_t& value)
+{
+	Save();
+}
 
+void AppSettings::_OnReplaceColorWindowRectChange(const SDL_Rect& value)
+{
+	Save();
+}
+
+void AppSettings::_OnReplaceColorDisplayNameChange(const std::string& value)
+{
+	Save();
+}
+
+void AppSettings::_OnReplaceColorDisplayIndexChange(const int64_t& value)
+{
+	Save();
+}
 
 
 
@@ -480,6 +520,40 @@ SDL_Color AppSettings::_Get_SDL_Color(Json::Value& json)
 	result.g = static_cast<uint8_t>(json[1].asUInt64());
 	result.b = static_cast<uint8_t>(json[2].asUInt64());
 	result.a = static_cast<uint8_t>(json[3].asUInt64());
+	return result;
+}
+
+bool AppSettings::_Is_SDL_Rect_Type(Json::Value& json)
+{
+	if (json.isArray() && json.size() == 4)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			if (!(json[i].isInt64()))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
+void AppSettings::_Save_SDL_Rect_Type(Json::Value& json, const SDL_Rect& value)
+{
+	json[0] = value.x;
+	json[1] = value.y;
+	json[2] = value.w;
+	json[3] = value.h;
+}
+
+SDL_Rect AppSettings::_Get_SDL_Rect(Json::Value& json)
+{
+	SDL_Rect result;
+	result.x = static_cast<int>(json[0].asInt64());
+	result.y = static_cast<int>(json[1].asInt64());
+	result.w = static_cast<int>(json[2].asInt64());
+	result.h = static_cast<int>(json[3].asInt64());
 	return result;
 }
 

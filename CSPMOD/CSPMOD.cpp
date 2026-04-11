@@ -21,6 +21,7 @@
 void CSPMOD::OnAttachCSP( uintptr_t moduleHandle)
 {
 
+	std::cout << "OnAttachCSP" << std::endl;
 	//abort();
 	//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "CSPMOD Error", "No Version Info in CSPAddressTable.json", nullptr);
 
@@ -29,6 +30,10 @@ void CSPMOD::OnAttachCSP( uintptr_t moduleHandle)
 	//获取基址
 	baseAttr = (uintptr_t)GetModuleHandle(NULL);
 	_moduleHandle = moduleHandle;
+
+
+	bool initResult=SDL_Init(SDL_INIT_VIDEO);
+	ASSERT(initResult &&"SDL Video Init Failed!");
 
 
 	UIMainThread::Start();
@@ -73,6 +78,11 @@ void CSPMOD::OnAttachCSP( uintptr_t moduleHandle)
 
 
 
+}
+
+void CSPMOD::OnDetachCSP()
+{
+	std::cout << "OnDetachCSP" << std::endl;
 }
 
 void CSPMOD::CodePatch(void* targetAddr, void* data, size_t datasize)
@@ -144,7 +154,7 @@ size_t get_instruction_length(void* address, size_t minLength) {
 	return offset;
 }
 
-static void _GenHookParam(void* targetFuncAddrIn, void** realAddr, size_t* cmdLen)
+static void _GenHookParam(void* targetFuncAddrIn, void** realAddr, size_t* cmdLen, CSPMOD::_HOOKREG reg)
 {
 	//由于编译器优化，memcpy可能会读出jmp表，但是VS中跳转目标函数显示的正常反汇编
 	//其实是没有问题的，因为vs跳转目标函数的汇编或者机器码的时候，也读的这里，
@@ -164,7 +174,10 @@ static void _GenHookParam(void* targetFuncAddrIn, void** realAddr, size_t* cmdLe
 	}
 	*realAddr = _realAddr;
 	//然后在_realAddr上计算命令长度
-	*cmdLen = get_instruction_length(_realAddr, 12);
+
+
+	*cmdLen = get_instruction_length(_realAddr, reg >= CSPMOD::_HOOKREG::_HOOKREG_R8 ? 13 : 12);
+	//*cmdLen = get_instruction_length(_realAddr, 12);
 	VirtualProtect(targetFuncAddrIn, 32, oldProtect, &oldProtect);
 }
 
@@ -212,13 +225,15 @@ bool CSPMOD::Hook(void* targetFuncAddr, void* myFunc, void** out_origfunc, _HOOK
 	//计算指令长度
 	void* trueAddr;
 	size_t saveCodeByteCount;
-	_GenHookParam(targetFuncAddr, &trueAddr, &saveCodeByteCount);
+	_GenHookParam(targetFuncAddr, &trueAddr, &saveCodeByteCount, reg);
 	targetFuncAddr = trueAddr;
 	{
 
 		int minCode = (reg >= _HOOKREG::_HOOKREG_R8 ? 13 : 12);
 
-		if(saveCodeByteCount < minCode || saveCodeByteCount > 48)return false;
+		if(/*saveCodeByteCount < minCode ||*/ saveCodeByteCount > 48)return false;
+
+		//saveCodeByteCount = max(saveCodeByteCount, minCode);
 
 		//根据一定字节数备份目标函数起始部分字节
 		DWORD oldProtect;

@@ -24,6 +24,8 @@ bool AddressGenerator::PushAddressData()
 
     PushTimerPointAddr();
     PushUDMPluginUnlockAddr();
+
+    PushCustomFilterAddr();
     return true;
 }
 

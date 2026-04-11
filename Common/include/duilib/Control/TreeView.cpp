@@ -86,8 +86,7 @@ void TreeNode::SetAttribute(const DString& strName, const DString& strValue)
 
 void TreeNode::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
 {
-    ASSERT(nNewDpiScale == Dpi().GetScale());
-    if (nNewDpiScale != Dpi().GetScale()) {
+    if (!Dpi().CheckDisplayScaleFactor(nNewDpiScale)) {
         return;
     }
 
@@ -288,9 +287,9 @@ int32_t TreeNode::GetExpandImagePadding(void) const
         }
     }
     if (pImage != nullptr) {
-        LoadImageData(*pImage);
-        if (pImage->GetImageCache() != nullptr) {
-            imageWidth = pImage->GetImageCache()->GetWidth();
+        LoadImageInfo(*pImage);
+        if (pImage->GetImageInfo() != nullptr) {
+            imageWidth = pImage->GetImageInfo()->GetWidth();
         }
     }
     if (imageWidth > 0) {
@@ -420,7 +419,7 @@ bool TreeNode::AddChildNodeAt(TreeNode* pTreeNode, const size_t iIndex)
     pTreeNode->AttachReturn(UiBind(&TreeNode::OnReturnKeyDown, pTreeNode, std::placeholders::_1));
     
     //监听勾选事件：用于多选时同步勾选子节点和同步父节点的三态选择状态
-    pTreeNode->AttachChecked(UiBind(&TreeNode::OnNodeCheckStatusChanged, pTreeNode, std::placeholders::_1));
+    pTreeNode->AttachCheck(UiBind(&TreeNode::OnNodeCheckStatusChanged, pTreeNode, std::placeholders::_1));
     pTreeNode->AttachUnCheck(UiBind(&TreeNode::OnNodeCheckStatusChanged, pTreeNode, std::placeholders::_1));
 
     UiPadding padding = GetPadding();
@@ -596,7 +595,7 @@ void TreeNode::AdjustExpandImagePadding()
         //显示[展开/收起]标志
         if (m_expandCheckBoxPadding == 0) {
             int32_t leftOffset = (int32_t)expandPadding;
-            if (AdjustStateImagesPaddingLeft(leftOffset, false)) {
+            if (AdjustStateImagesMarginLeft(leftOffset, false)) {
                 m_expandCheckBoxPadding = expandPadding;
             }
         }
@@ -606,10 +605,10 @@ void TreeNode::AdjustExpandImagePadding()
         }
 
         if (m_expandIconPadding == 0) {
-            //有CheckBox状态图片, 需要设置背景图片的内边距，避免两个图片重叠
-            UiPadding rcBkPadding = GetBkImagePadding();
-            rcBkPadding.left += expandPadding;
-            if (SetBkImagePadding(rcBkPadding, false)) {
+            //有CheckBox状态图片, 需要设置背景图片的外边距，避免两个图片重叠
+            UiMargin rcBkMargin = GetBkImageMargin();
+            rcBkMargin.left += expandPadding;
+            if (SetBkImageMargin(rcBkMargin, false)) {
                 m_expandIconPadding = expandPadding;
             }
         }
@@ -626,15 +625,15 @@ void TreeNode::AdjustExpandImagePadding()
         //不显示[展开/收起]标志
         if (m_expandCheckBoxPadding > 0) {
             int32_t leftOffset = -(int32_t)m_expandCheckBoxPadding;
-            AdjustStateImagesPaddingLeft(leftOffset, false);
+            AdjustStateImagesMarginLeft(leftOffset, false);
             m_expandCheckBoxPadding = 0;
         }
 
         if (m_expandIconPadding > 0) {
-            UiPadding rcBkPadding = GetBkImagePadding();
-            rcBkPadding.left -= (int32_t)m_expandIconPadding;
-            if (rcBkPadding.left >= 0) {
-                SetBkImagePadding(rcBkPadding, false);
+            UiMargin rcBkMargin = GetBkImageMargin();
+            rcBkMargin.left -= (int32_t)m_expandIconPadding;
+            if (rcBkMargin.left >= 0) {
+                SetBkImageMargin(rcBkMargin, false);
             }
             m_expandIconPadding = 0;
         }
@@ -662,10 +661,10 @@ void TreeNode::AdjustCheckBoxPadding()
         }
         
         if ((checkBoxPadding > 0) && (m_checkBoxIconPadding == 0)){
-            //有CheckBox状态图片, 需要设置背景图片的内边距，避免两个图片重叠
-            UiPadding rcBkPadding = GetBkImagePadding();
-            rcBkPadding.left += checkBoxPadding;
-            if (SetBkImagePadding(rcBkPadding, false)) {
+            //有CheckBox状态图片, 需要设置背景图片的外边距，避免两个图片重叠
+            UiMargin rcBkMargin = GetBkImageMargin();
+            rcBkMargin.left += checkBoxPadding;
+            if (SetBkImageMargin(rcBkMargin, false)) {
                 m_checkBoxIconPadding = checkBoxPadding;
             }            
         }
@@ -681,10 +680,10 @@ void TreeNode::AdjustCheckBoxPadding()
     else {
         //隐藏CheckBox
         if (m_checkBoxIconPadding > 0) {
-            UiPadding rcBkPadding = GetBkImagePadding();
-            rcBkPadding.left -= (int32_t)m_checkBoxIconPadding;
-            if (rcBkPadding.left >= 0) {
-                SetBkImagePadding(rcBkPadding, false);
+            UiMargin rcBkMargin = GetBkImageMargin();
+            rcBkMargin.left -= (int32_t)m_checkBoxIconPadding;
+            if (rcBkMargin.left >= 0) {
+                SetBkImageMargin(rcBkMargin, false);
             }
             m_checkBoxIconPadding = 0;
         }
@@ -1121,8 +1120,7 @@ void TreeView::SetAttribute(const DString& strName, const DString& strValue)
 
 void TreeView::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
 {
-    ASSERT(nNewDpiScale == Dpi().GetScale());
-    if (nNewDpiScale != Dpi().GetScale()) {
+    if (!Dpi().CheckDisplayScaleFactor(nNewDpiScale)) {
         return;
     }
     int32_t iValue = GetIndent();

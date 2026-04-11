@@ -3,9 +3,6 @@
 #include "duilib/Core/Window.h"
 #include "duilib/Utils/FilePathUtil.h"
 #include "duilib/Utils/FileUtil.h"
-#include "duilib/Image/ImageDecoder.h"
-#include "duilib/Image/ImageLoadAttribute.h"
-#include "duilib/Image/ImageInfo.h"
 #include <map>
 
 #ifdef DUILIB_BUILD_FOR_SDL
@@ -131,25 +128,25 @@ bool CursorManager::SetCursor(CursorType cursorType)
 
 /** 从内存数据中加载光标
 */
-static SDL_Cursor* LoadCursorFromData(const Window* pWindow, std::vector<uint8_t>& fileData, const DString& imagePath)
+static SDL_Cursor* LoadCursorFromData(const Window* pWindow, std::vector<uint8_t>& fileData, const FilePath& imageFilePath)
 {
     if (fileData.empty() || (pWindow == nullptr)) {
         return nullptr;
     }
     
-    ImageLoadAttribute loadAttr = ImageLoadAttribute(DString(), DString(), false, false, 0);
-    loadAttr.SetImageFullPath(imagePath);
-    uint32_t nFrameCount = 0;
-    ImageDecoder imageDecoder;
-    std::unique_ptr<ImageInfo> imageInfo = imageDecoder.LoadImageData(fileData, loadAttr, true, 100, pWindow->Dpi().GetScale(), true, nFrameCount);
-    ASSERT(imageInfo != nullptr);
-    if (imageInfo == nullptr) {
+    ImageDecoderFactory& imageDecoders = GlobalManager::Instance().ImageDecoders();
+    float fImageSizeScale = pWindow->Dpi().GetDisplayScale();
+    ImageDecodeParam decodeParam;
+    decodeParam.m_imageFilePath = imageFilePath;
+    decodeParam.m_fImageSizeScale = fImageSizeScale;
+    decodeParam.m_pFileData = std::make_shared<std::vector<uint8_t>>(fileData);
+    std::shared_ptr<IBitmap> pBitmap = imageDecoders.DecodeImageData(decodeParam);
+    if (pBitmap == nullptr) {
         return nullptr;
     }
-
-    IBitmap* pBitmap = imageInfo->GetBitmap(0);
-    ASSERT(pBitmap != nullptr);
-    if (pBitmap == nullptr) {
+    uint32_t nWidth = pBitmap->GetWidth();
+    uint32_t nHeight = pBitmap->GetHeight();
+    if ((nWidth < 1) || (nHeight < 1)) {
         return nullptr;
     }
 
@@ -160,11 +157,23 @@ static SDL_Cursor* LoadCursorFromData(const Window* pWindow, std::vector<uint8_t
     }
 
 #ifdef DUILIB_BUILD_FOR_WIN
-    SDL_PixelFormat format = SDL_PIXELFORMAT_BGRA32;
-#else
-    SDL_PixelFormat format = SDL_PIXELFORMAT_RGBA32;
+    //交换R和G，Windows平台使用ABGR格式，需要转换为RGBA32格式
+    // RGBA 像素结构体
+    struct CurRGBA {
+        uint8_t r, g, b, a;
+    };
+    ASSERT(sizeof(CurRGBA) == 4);
+    CurRGBA* pPixelBitsRGBA = (CurRGBA*)pPixelBits;
+    const int32_t nImageHeight = pBitmap->GetHeight();
+    const int32_t nImageWidth = pBitmap->GetWidth();
+    for (int y = 0; y < nImageHeight; y++) {
+        for (int x = 0; x < nImageWidth; x++) {
+            CurRGBA& pixelColor = pPixelBitsRGBA[y * nImageWidth + x];
+            std::swap(pixelColor.b, pixelColor.r);
+        }
+    }
 #endif
-    SDL_Surface* cursorSurface = SDL_CreateSurfaceFrom(pBitmap->GetWidth(), pBitmap->GetHeight(), format, pPixelBits, pBitmap->GetWidth() * sizeof(uint32_t));
+    SDL_Surface* cursorSurface = SDL_CreateSurfaceFrom(nWidth, nHeight, SDL_PIXELFORMAT_RGBA32, pPixelBits, nWidth * sizeof(uint32_t));
     ASSERT(cursorSurface != nullptr);
     if (cursorSurface == nullptr) {
         return nullptr;
@@ -172,6 +181,7 @@ static SDL_Cursor* LoadCursorFromData(const Window* pWindow, std::vector<uint8_t
 
     int hot_x = 0;
     int hot_y = 0;
+    DString imagePath = imageFilePath.ToString();
     size_t nDot = imagePath.rfind(_T('.'));
     if ((nDot != DString::npos) && (fileData.size() > 16)) {
         DString ext = imagePath.substr(nDot);
@@ -208,7 +218,9 @@ bool CursorManager::SetImageCursor(const Window* pWindow, const FilePath& curIma
     }
 
     //设置窗口图标
-    FilePath cursorFullPath = GlobalManager::Instance().GetExistsResFullPath(pWindow->GetResourcePath(), pWindow->GetXmlPath(), curImagePath);
+    bool bLocalPath = false;
+    bool bResPath = false;
+    FilePath cursorFullPath = GlobalManager::Instance().GetExistsResFullPath(pWindow->GetResourcePath(), pWindow->GetXmlPath(), curImagePath, bLocalPath, bResPath);
     ASSERT(!cursorFullPath.IsEmpty());
     if (cursorFullPath.IsEmpty()) {
         return false;
@@ -235,7 +247,7 @@ bool CursorManager::SetImageCursor(const Window* pWindow, const FilePath& curIma
         ASSERT(!fileData.empty());
         if (!fileData.empty()) {
             //从内存中加载光标
-            sdlCursor = LoadCursorFromData(pWindow, fileData, curImagePath.ToString());
+            sdlCursor = LoadCursorFromData(pWindow, fileData, curImagePath);
             ASSERT(sdlCursor != nullptr);
             if (sdlCursor != nullptr) {
                 m_impl->m_cursorMap[cursorFullPath] = sdlCursor;

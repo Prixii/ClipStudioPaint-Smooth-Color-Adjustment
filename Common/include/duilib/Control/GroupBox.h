@@ -195,8 +195,7 @@ void GroupBoxTemplate<InheritType>::SetAttribute(const DString& strName, const D
 template<typename InheritType>
 void GroupBoxTemplate<InheritType>::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
 {
-    ASSERT(nNewDpiScale == this->Dpi().GetScale());
-    if (nNewDpiScale != this->Dpi().GetScale()) {
+    if (!this->Dpi().CheckDisplayScaleFactor(nNewDpiScale)) {
         return;
     }
     UiSize cxyRound = this->GetCornerSize();
@@ -224,7 +223,9 @@ void GroupBoxTemplate<InheritType>::PaintText(IRender* pRender)
     UiRect drawTextRect;//文本的绘制区域
     bool hasClip = false;
     if (!textValue.empty()) {
-        UiRect textRect = pRender->MeasureString(textValue, this->GetIFontById(this->GetFontId()), 0, 0);
+        MeasureStringParam measureParam;
+        measureParam.pFont = this->GetIFontById(this->GetFontId());
+        UiRect textRect = pRender->MeasureString(textValue, measureParam);
         drawTextRect = this->GetRect();
         drawTextRect.Deflate(rcPadding);
         drawTextRect.Deflate(this->GetTextPadding());

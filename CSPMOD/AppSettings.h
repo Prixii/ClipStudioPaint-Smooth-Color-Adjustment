@@ -20,7 +20,11 @@ typedef std::string _CatString;
     F(FunctionEnable,ColorBalance,bool,true)         \
     F(FunctionEnable,ToneCurve,bool,true) \
     F(FunctionEnable,TimeLapseExport,bool,true) \
-    F(FunctionEnable,Script_ApplyEffects,bool,true) 
+    F(FunctionEnable,Script_ApplyEffects,bool,true) \
+    F(ReplaceColor,Tolerance,int64_t,50) \
+    F(ReplaceColor,WindowRect,SDL_Rect,_defalutReplaceWindowRect)\
+    F(ReplaceColor,DisplayName,_CatString,"PrimaryMonitor")\
+    F(ReplaceColor,DisplayIndex,int64_t,0)
 
 //MouseInputArea使用字符串，需要处理显示器名相同的情况
 //有非默认加载写入行为的
@@ -34,7 +38,11 @@ inline bool operator!=(SDL_Color const& lhs, SDL_Color const& rhs)
 {
     return SDL_memcmp(&lhs, &rhs, sizeof(SDL_Color)) != 0;
 }
-
+//对SDL_Rect函数进行重载
+inline bool operator!=(SDL_Rect const& lhs, SDL_Rect const& rhs)
+{
+    return SDL_memcmp(&lhs, &rhs, sizeof(SDL_Rect)) != 0;
+}
 class AppSettings
 {
 public:
@@ -88,9 +96,14 @@ private:
     static SDL_Color _Get_SDL_Color(Json::Value& json);
 
 
+    static bool _Is_SDL_Rect_Type(Json::Value& json);
+    static void _Save_SDL_Rect_Type(Json::Value& json, const SDL_Rect& value);
+    static SDL_Rect _Get_SDL_Rect(Json::Value& json);
+
 
     static AppSettings ins;
-    static SDL_Color _defaultBackgroundColor;
+    static inline SDL_Color _defaultBackgroundColor = { 255,255,255,0 };
+    static inline SDL_Rect _defalutReplaceWindowRect= { 0, 0, 0, 0 };
 
 
     std::string  prefpath ;

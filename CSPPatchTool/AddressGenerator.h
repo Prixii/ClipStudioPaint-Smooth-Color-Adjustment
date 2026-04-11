@@ -22,6 +22,7 @@ public:
 	void PushCSPDataAddr();
 	void PushTimeLapseExportAddr();
 	void PushLayerObjectAddr();
+	void PushCustomFilterAddr();
 
 
 	void PushTimerPointAddr();

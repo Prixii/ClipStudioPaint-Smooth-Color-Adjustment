@@ -87,13 +87,19 @@ void CefControlNative::ReCreateBrowser()
 #if CEF_VERSION_MAJOR > 109
     window_info.runtime_style = CEF_RUNTIME_STYLE_ALLOY;
 #endif
-    CefRect rect = { GetRect().left, GetRect().top, GetRect().right, GetRect().bottom};
+    UiRect rc = GetRect();
+    Dpi().ClientSizeToWindowSize(rc);
+    CefRect rect = { rc.left, rc.top, rc.right, rc.bottom};
 #ifdef DUILIB_BUILD_FOR_WIN
     //Windows
     window_info.SetAsChild(pWindow->NativeWnd()->GetHWND(), rect);
 #elif defined (DUILIB_BUILD_FOR_LINUX) || defined (DUILIB_BUILD_FOR_FREEBSD)
     //Linux
-    window_info.SetAsChild(pWindow->NativeWnd()->GetX11WindowNumber(), rect);
+    CefWindowHandle hParenWindow = (CefWindowHandle)pWindow->NativeWnd()->GetX11WindowNumber();
+    if (pWindow->NativeWnd()->IsVideoDriverWayland()) {
+        hParenWindow = (CefWindowHandle)pWindow->NativeWnd()->GetWaylandDisplayPointer();
+    }
+    window_info.SetAsChild(hParenWindow, rect);
 #elif defined DUILIB_BUILD_FOR_MACOS
     //MacOS
     window_info.SetAsChild(pWindow->NativeWnd()->GetNSView(), rect);
@@ -198,7 +204,7 @@ std::shared_ptr<IBitmap> CefControlNative::MakeImageSnapshot()
         if (pRenderFactory != nullptr) {
             spBitmap.reset(pRenderFactory->CreateBitmap());
             if (spBitmap != nullptr) {
-                if (!spBitmap->Init(width, height, true, bitmap.data())) {
+                if (!spBitmap->Init(width, height, bitmap.data())) {
                     spBitmap.reset();
                 }
             }

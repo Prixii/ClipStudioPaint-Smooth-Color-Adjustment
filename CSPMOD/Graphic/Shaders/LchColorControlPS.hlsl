@@ -1,0 +1,48 @@
+#include"Tolerance.hlsli"
+cbuffer _ConstantBuffer : register(b0)
+{
+    float L;
+    float pixPerUV;
+    float padding2;
+    float padding3;
+};
+
+
+struct PS_IN
+{
+    float4 Position : SV_POSITION;
+    float2 uv : TEXCOORD0;
+};
+
+
+Texture2D<float> L_MaxC_Table : register(t0);
+SamplerState TableSampler : register(s0);
+
+
+float4 main(PS_IN psIN) : SV_TARGET
+{
+    float d = distance(psIN.uv, float2(0.5f, 0.5f));
+    if (d >0.5 )
+        return float4(0.0f, 0.0f, 0.0f, 0.0f);
+    
+    
+    float alpha = clamp((0.5 - d) * 0.4 * pixPerUV, 
+    0, 1);
+    
+    float h_rad = atan2(psIN.uv.y - 0.5f, psIN.uv.x - 0.5f);
+    h_rad += radians(150);
+    if (h_rad < 0)
+        h_rad += 2 * PI;
+    else if (h_rad >= 2 * PI)
+        h_rad -= 2 * PI;
+    //h_rad = 2 * PI;
+    //h_rad=0和2PI的时候RGBH2LCHH返回了不同的值
+    //上面改成>= 2 * PI就好了，神经.
+    float realHue = RGBH2LCHH(h_rad);
+    
+    
+    
+    float cFactor = SAMPLER_FROM_TABLE(realHue, L);
+    
+    return float4(LCH_to_sRGB(float3(L, cFactor * d * 200.f, realHue)), alpha);
+}

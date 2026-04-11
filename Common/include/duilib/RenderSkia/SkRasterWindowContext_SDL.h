@@ -5,8 +5,7 @@
 
 #ifdef DUILIB_BUILD_FOR_SDL
 
-#pragma warning (push)
-#pragma warning (disable: 4244 4201 4100 4267)
+#include "SkiaHeaderBegin.h"
 
 #include "include/core/SkSurface.h"
 #include "include/core/SkCanvas.h"
@@ -19,7 +18,7 @@
     #error 请检查宏定义：SK_GL与Skia库的编译选项保持一致
 #endif
 
-#pragma warning (pop)
+#include "SkiaHeaderEnd.h"
 
 //SDL的类型，提前声明
 struct SDL_Window;
@@ -84,6 +83,10 @@ protected:
     /** 将已经绘制的区域标记为有效区域
     */
     void ValidateRect(UiRect& rcPaint) const;
+
+    /** 清理资源
+    */
+    void Clear();
 
 private:
     /** 获取Skia的颜色值顺序

@@ -2,7 +2,6 @@
 #include"DllInject.h"
 #include<SDL3/SDL.h>
 
-
 void AddressGenerator::PushCSPHelperAddr()
 {
 	SDL_Log("Start Find CSP Helper Entrance Addresses...");

@@ -20,5 +20,10 @@
 		<MenuItem class="helperMenuElement" name="helperMenu_about" width="auto">
 			<Label class="helperMenuText"  text_id="STRID_HELPERMENU_ABOUT" mouse_enabled="false" keyboard_enabled="false"/>
 		</MenuItem>
+		
+		
+		<MenuItem class="helperMenuElement" name="helperMenu_colorWheel" width="auto">
+			<Label class="helperMenuText"  text_id="STRID_HELPERMENU_COLORWHEEL" mouse_enabled="false" keyboard_enabled="false"/>
+		</MenuItem>
 	</MenuListBox>
 </Window>

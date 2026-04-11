@@ -39,11 +39,11 @@ DString Box::GetType() const { return DUI_CTR_BOX; }
 
 void Box::SetAttribute(const DString& strName, const DString& strValue)
 {
-    if ((strName == _T("mouse_child")) || (strName == _T("mousechild"))) {
-        SetMouseChildEnabled(strValue == _T("true"));
-    }
-    else if (m_pLayout->SetAttribute(strName, strValue, Dpi())) {
+    if (m_pLayout->SetAttribute(strName, strValue, Dpi())) {
         return;
+    }
+    else if ((strName == _T("mouse_child")) || (strName == _T("mousechild"))) {
+        SetMouseChildEnabled(strValue == _T("true"));
     }
     else if (strName == _T("drag_out_id")) {
         uint8_t nValue = ui::TruncateToUInt8(StringUtil::StringToInt32(strValue));
@@ -60,8 +60,7 @@ void Box::SetAttribute(const DString& strName, const DString& strValue)
 
 void Box::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
 {
-    ASSERT(nNewDpiScale == Dpi().GetScale());
-    if (nNewDpiScale != Dpi().GetScale()) {
+    if (!Dpi().CheckDisplayScaleFactor(nNewDpiScale)) {
         return;
     }
     if (m_pLayout != nullptr) {
@@ -75,6 +74,17 @@ void Box::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
     }
 }
 
+void Box::OnLanguageChanged()
+{
+    BaseClass::OnLanguageChanged();
+    for (auto pControl : m_items) {
+        ASSERT(pControl != nullptr);
+        if (pControl != nullptr) {
+            pControl->OnLanguageChanged();
+        }
+    }
+}
+
 void Box::SetParent(Box* pParent)
 {
     Control::SetParent(pParent);
@@ -83,7 +93,7 @@ void Box::SetParent(Box* pParent)
         if (pControl != nullptr) {
             pControl->SetParent(this);
         }
-    }    
+    }
 }
 
 void Box::SetWindow(Window* pWindow)
@@ -101,7 +111,7 @@ void Box::SetPos(UiRect rc)
 {
     Control::SetPos(rc);
     if (m_pLayout != nullptr) {
-        m_pLayout->ArrangeChild(m_items, rc);    
+        m_pLayout->ArrangeChildren(m_items, rc);    
     }
 }
 
@@ -194,16 +204,12 @@ void Box::OnSetVisible(bool bChanged)
 
 UiEstSize Box::EstimateSize(UiSize szAvailable)
 {
-    UiFixedSize fixedSize = GetFixedSize();
-    if (!fixedSize.cx.IsAuto() && !fixedSize.cy.IsAuto()) {
-        //如果宽高都不是auto属性，则直接返回
-        return MakeEstSize(fixedSize);
+    UiFixedSize fixedSize;
+    UiEstSize returnEstSize;
+    if (!PreEstimateSize(szAvailable, fixedSize, returnEstSize)) {
+        return returnEstSize;
     }
-    szAvailable.Validate();
-    if (!IsReEstimateSize(szAvailable)) {
-        //使用缓存中的估算结果
-        return GetEstimateSize();
-    }
+
     //Box控件本身的大小，不包含外边距（本身也是一个控件，可以有文字/背景图片等）
     UiPadding rcPadding = GetPadding();
     UiSize szNewAvailable = szAvailable;
@@ -219,7 +225,8 @@ UiEstSize Box::EstimateSize(UiSize szAvailable)
     }
 
     //子控件的大小，包含内边距，但不包含外边距
-    UiSize sizeByChild = m_pLayout->EstimateSizeByChild(m_items, szAvailable);
+    UiSize64 layoutSize = m_pLayout->EstimateLayoutSize(m_items, szAvailable);
+    UiSize sizeByChild(ui::TruncateToInt32(layoutSize.cx), ui::TruncateToInt32(layoutSize.cy));
     
     SetReEstimateSize(false);
     for (auto pControl : m_items) {
@@ -250,6 +257,7 @@ UiEstSize Box::EstimateSize(UiSize szAvailable)
 Control* Box::FindControl(FINDCONTROLPROC Proc, void* pProcData,
                           uint32_t uFlags, const UiPoint& ptMouse, const UiPoint& scrollPos)
 {
+    //在子控件和自身匹配查找
     return FindControlInItems(m_items, Proc, pProcData, uFlags, ptMouse, scrollPos);
 }
 

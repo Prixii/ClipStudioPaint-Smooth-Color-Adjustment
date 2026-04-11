@@ -45,6 +45,10 @@ public:
     */
     static NativeWindow_SDL* GetWindowFromID(SDL_WindowID id);
 
+    /** 获取模拟的Hover消息ID
+    */
+    static uint32_t GetHoverMsgId();
+
     /** 窗口消息的处理函数, 从系统接收到消息后，进入的第一个处理函数
     * @param [in] sdlEvent 消息数据
     * @return 如果内部处理了该消息返回true，否则返回false
@@ -105,9 +109,30 @@ public:
 #endif
 
 #if defined (DUILIB_BUILD_FOR_LINUX) || defined (DUILIB_BUILD_FOR_FREEBSD)
-    /** 获取X11的窗口标识符
+    /** 当前窗口后端引擎是否为X11
+    */
+    bool IsVideoDriverX11() const;
+
+    /** 当前窗口后端引擎是否为X11
+    */
+    bool IsVideoDriverWayland() const;
+
+    /** 获取X11的窗口所在Display指针（对应于X11的::Display*类型）
+    */
+    size_t GetX11DisplayPointer() const;
+
+    /** 获取X11的Screen标识符（对应于X11的Screen）
+    */
+    uint64_t GetX11ScreenNumber() const;
+
+    /** 获取X11的窗口标识符（对应于X11的::Window类型）
     */
     uint64_t GetX11WindowNumber() const;
+
+    /** 获取Wayland的窗口所在Display指针（对应于Wayland的wl_display*类型）
+    */
+    size_t GetWaylandDisplayPointer() const;
+
 #endif
 
 #if defined DUILIB_BUILD_FOR_MACOS
@@ -552,6 +577,18 @@ public:
     */
     Control* FindControl(const UiPoint& pt) const;
 
+    /** 创建窗口时，是否需要居中窗口
+    */
+    bool NeedCenterWindowAfterCreated() const;
+
+public:
+    //几组支持高分屏的API接口
+    bool GetWindowSize(int32_t* w, int32_t* h) const;
+    bool GetWindowSizeInPixels(int32_t* w, int32_t* h) const;
+    float GetDisplayContentScale() const;   //获取窗口所在屏幕的内容显示比例
+    float GetWindowDisplayScale() const;    //获取该窗口的内容显示比例（与窗口所在屏幕的内容显示比例不一定相同）
+    float GetWindowPixelDensity() const;    //获取该窗口的像素密度值
+
 private:
     /** 创建窗口和渲染接口
     */
@@ -674,6 +711,12 @@ private:
     /** 窗口大小的最大值（宽度和高度）
     */
     UiSize m_szMaxWindow;
+
+    /** 窗口的初始化大小和窗口左上角的初始坐标值(Wayland模式下需要使用)
+    */
+    UiSize m_szInitWindow;
+    UiPoint m_ptInitWindow;
+    bool m_bInitWindowPosFlag;
 
     /** 鼠标所在位置
     */

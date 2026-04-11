@@ -8,6 +8,7 @@
 
 #include"DUI/Dialog/CheckFunction_Dlg.h"
 #include"DUI/Dialog/About_Dlg.h"
+#include"DUI/Dialog/ColWheelWnd.h"
 #include"ScriptAction_ApplyEffects.h"
 void CSPHelper::Init()
 {
@@ -54,6 +55,8 @@ void CSPHelper::OnClickEntrance()
     ui::MenuItem* helperMenu_applyEffects = dynamic_cast<ui::MenuItem*>(menu->FindControl(L"helperMenu_applyEffects"));
     ui::MenuItem* helperMenu_checkFunctions = dynamic_cast<ui::MenuItem*>(menu->FindControl(L"helperMenu_checkFunctions"));
     ui::MenuItem* helperMenu_about = dynamic_cast<ui::MenuItem*>(menu->FindControl(L"helperMenu_about"));
+
+    ui::MenuItem* helperMenu_colorWheel = dynamic_cast<ui::MenuItem*>(menu->FindControl(L"helperMenu_colorWheel"));
     
     ui::UiSize sizeMax(9999, 9999);
     int32_t maxW = 0;
@@ -74,12 +77,19 @@ void CSPHelper::OnClickEntrance()
         int32_t curW = helperMenu_about->EstimateSize(sizeMax).cx.GetInt32();
         if (curW > maxW)maxW = curW;
     }
+    if (helperMenu_colorWheel)
+    {
+        int32_t curW = helperMenu_colorWheel->EstimateSize(sizeMax).cx.GetInt32();
+        if (curW > maxW)maxW = curW;
+    }
+
     helperMenu_applyEffects->SetFixedWidth(ui::UiFixedInt(maxW), true, false);
     helperMenu_checkFunctions->SetFixedWidth(ui::UiFixedInt(maxW), true, false);
     helperMenu_about->SetFixedWidth(ui::UiFixedInt(maxW), true, false);
+    helperMenu_colorWheel->SetFixedWidth(ui::UiFixedInt(maxW), true, false);
 
 
-
+    helperMenu_colorWheel->SetVisible(isProUser());
 
     ////设置部分项目的显隐
     //if (AppSettings::GetIns().GetWindowTransparent())
@@ -106,6 +116,11 @@ void CSPHelper::OnClickEntrance()
     if (helperMenu_about)helperMenu_about->AttachClick(
         [](const ui::EventArgs&)->bool {
             About_Dlg::ShowModalDlg();
+            return true;
+        });
+    if (helperMenu_colorWheel)helperMenu_colorWheel->AttachClick(
+        [](const ui::EventArgs&)->bool {
+            ColWheelWnd::ShowForm();
             return true;
         });
 

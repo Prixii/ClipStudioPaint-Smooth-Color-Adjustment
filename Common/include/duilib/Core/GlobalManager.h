@@ -14,6 +14,7 @@
 #include "duilib/Core/CursorManager.h"
 #include "duilib/Core/IconManager.h"
 #include "duilib/Core/WindowManager.h"
+#include "duilib/Image/ImageDecoderFactory.h"
 
 #include <string>
 #include <vector>
@@ -66,6 +67,13 @@ public:
     /** 释放全局资源
      */
     void Shutdown();
+
+
+#define GlobalManager_patch_h
+#include"duilib_CodePatch/GlobalManager_patch.h"
+#undef GlobalManager_patch_h
+
+
 
 public:
     /** 设置皮肤资源所在路径
@@ -156,6 +164,15 @@ public:
     void RemoveAllClasss();
 
 public:
+    /** 停止一个内部线程(内部默认启动kThreadWorker/kThreadImage1/kThreadImage2这3个线程，如果不需要可停止掉)
+    */
+    bool StopInnerThread(int32_t nThreadIdentifier);
+
+    /** 启动一个内部线程（kThreadWorker/kThreadNetwork/kThreadImage1/kThreadImage2）
+    */
+    bool StartInnerThread(int32_t nThreadIdentifier);
+
+public:
     /** 获取绘制接口类对象
     */
     IRenderFactory* GetRenderFactory();
@@ -171,6 +188,10 @@ public:
     /** 获取图片管理器
     */
     ImageManager& Image();
+
+    /** 图片格式解码器
+    */
+    ImageDecoderFactory& ImageDecoders();
 
     /** 获取ICON资源管理器
     */
@@ -210,43 +231,51 @@ public:
      * @param [in] windowResPath 窗口对应的资源相对目录，比如："controls\\"
      * @param [in] windowXmlPath 窗口对应XML所在的相对目录，比如："controls\\menu\\"
      * @param [in] resPath 资源文件路径，比如："../public/button/btn_wnd_gray_min_hovered.png"
+     * @param [out] bLocalPath 返回true表示文件为本地路径，返回false表示文件为zip压缩包内路径
+     * @param [out] bResPath 返回true表示文件在程序资源路径内，返回false表示文件不在程序资源路径内
      * @return 返回可用的完整的资源路径，如果资源路径不存在，则返回空
                返回有效的路径格式如下：
               （1）如果是使用ZIP压缩包，返回："resources\themes\default\public\button\btn_wnd_gray_min_hovered.png"
               （2）如果未使用ZIP压缩包，返回："<程序所在目录>\resources\themes\default\public\button\btn_wnd_gray_min_hovered.png"
      */
-    FilePath GetExistsResFullPath(const FilePath& windowResPath, const FilePath& windowXmlPath, const FilePath& resPath);
+    FilePath GetExistsResFullPath(const FilePath& windowResPath,
+                                  const FilePath& windowXmlPath,
+                                  const FilePath& resPath,
+                                  bool& bLocalPath,
+                                  bool& bResPath);
 
     /** 根据 XML 创建一个 Box
-     * @param[in] strXmlPath XML 文件路径
-     * @param[in] callback 自定义控件的回调处理函数
+     * @param [in] pWindow 关联的窗口, 不允许为nullptr, 因DPI自适应需要对控件的大小等进行DPI缩放
+     * @param [in] strXmlPath XML 文件路径
+     * @param [in] callback 自定义控件的回调处理函数
      * @return 指定布局模块的对象指针
      */
-    Box* CreateBox(const FilePath& strXmlPath, CreateControlCallback callback = CreateControlCallback());
+    Box* CreateBox(Window* pWindow, const FilePath& strXmlPath, CreateControlCallback callback = CreateControlCallback());
 
     /** 根据 XML 在缓存中查找指定 Box，如果没有则创建
-     * @param[in] strXmlPath XML 文件路径
-     * @param[in] callback 自定义控件的回调处理函数
+     * @param [in] pWindow 关联的窗口, 不允许为nullptr, 因DPI自适应需要对控件的大小等进行DPI缩放
+     * @param [in] strXmlPath XML 文件路径
+     * @param [in] callback 自定义控件的回调处理函数
      * @return 指定布局模块的对象指针
      */
-    Box* CreateBoxWithCache(const FilePath& strXmlPath, CreateControlCallback callback = CreateControlCallback());
+    Box* CreateBoxWithCache(Window* pWindow, const FilePath& strXmlPath, CreateControlCallback callback = CreateControlCallback());
 
-    /** 使用 XML 填充指定 Box
-     * @param[in] pUserDefinedBox 要填充的 box 指针
-     * @param[in] strXmlPath XML 文件路径
-     * @param[in] callback 自定义控件的回调处理函数
+    /** 使用 XML 填充指定 Box (注意事项：该函数会跳过XML文件的根节点和一级子节点，直接将三级节点的内容解析后追加到pUserDefinedBox里面，作为其子节点)
+     * @param [in] pUserDefinedBox 要填充的 box 指针，不允许为nullptr，并且该控件必须关联窗口
+     * @param [in] strXmlPath XML 文件路径
+     * @param [in] callback 自定义控件的回调处理函数
      */
-    void FillBox(Box* pUserDefinedBox, const FilePath& strXmlPath, CreateControlCallback callback = CreateControlCallback());
+    bool FillBox(Box* pUserDefinedBox, const FilePath& strXmlPath, CreateControlCallback callback = CreateControlCallback());
 
-    /** 使用构建过的缓存填充指定 Box，如果没有则重新构建
-     * @param[in] pUserDefinedBox 要填充的 box 指针
-     * @param[in] strXmlPath XML 文件路径
-     * @param[in] callback 自定义控件的回调处理函数
+    /** 使用构建过的缓存填充指定 Box，如果没有则重新构建 (注意事项：该函数会跳过XML文件的根节点和一级子节点，直接将三级节点的内容解析后追加到pUserDefinedBox里面，作为其子节点)
+     * @param [in] pUserDefinedBox 要填充的 box 指针，不允许为nullptr，并且该控件必须关联窗口
+     * @param [in] strXmlPath XML 文件路径
+     * @param [in] callback 自定义控件的回调处理函数
      */
-    void FillBoxWithCache(Box* pUserDefinedBox, const FilePath& strXmlPath, CreateControlCallback callback = CreateControlCallback());
+    bool FillBoxWithCache(Box* pUserDefinedBox, const FilePath& strXmlPath, CreateControlCallback callback = CreateControlCallback());
 
     /** 自定义控件创建后的全局回调函数
-     * @param[in] strControlName 自定义控件名称
+     * @param [in] strControlName 自定义控件名称
      * @return 返回一个自定义控件的对象指针
      */
     Control* CreateControl(const DString& strControlName);
@@ -271,6 +300,12 @@ private:
     /** 从缓存中删除所有图片
      */
     void RemoveAllImages();
+
+    /** 检查图片文件路径是否存在
+    * @param [in,out] imageFullPath 如果不存在清空，如果存在保留
+    * @param [out] bLocalPath 返回true表示文件为本地路径，返回false表示文件为zip压缩包内路径
+    */
+    void CheckImagePath(FilePath& imageFullPath, bool& bLocalPath);
 
 private:
 
@@ -327,6 +362,10 @@ private:
     */
     ImageManager m_imageManager;
 
+    /** 图片格式解码器
+    */
+    ImageDecoderFactory m_imageDecoderFactory;
+
     /** ZIP压缩包管理器
     */
     ZipManager m_zipManager;
@@ -362,6 +401,10 @@ private:
     /** 退出时要执行的函数
     */
     std::vector<std::function<void()>> m_atExitFunctions;
+
+    /** 库内部使用的线程池
+    */
+    std::vector <std::shared_ptr<FrameworkThread>> m_threadList;
 };
 
 } // namespace ui

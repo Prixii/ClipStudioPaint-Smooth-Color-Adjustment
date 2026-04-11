@@ -488,6 +488,10 @@ public:
     */
     Control* FindControl(const UiPoint& pt) const;
 
+    /** 创建窗口时，是否需要居中窗口
+    */
+    bool NeedCenterWindowAfterCreated() const;
+
 private:
     /** 窗口过程函数
     * @param [in] hWnd 窗口句柄
@@ -750,6 +754,10 @@ private:
     /** 拖放功能的实现接口
     */
     WindowDropTarget* m_pWindowDropTarget;
+
+    /** 窗口的界面缩放比
+    */
+    uint32_t m_nWindowDpiScaleFactor;
 };
 
 /** 定义别名

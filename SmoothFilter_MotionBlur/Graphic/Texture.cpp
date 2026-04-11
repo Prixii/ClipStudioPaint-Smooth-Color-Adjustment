@@ -1,12 +1,12 @@
- #include "../pch.h"
-#include "Texture.h"
-#include"D3D11Graphic.h"
+#include "../pch.h"
+#include "Graphic/Texture.h"
+#include"Graphic/D3D11Graphic.h"
 
 
 Texture::Texture(Texture::_format format, unsigned int sizeW, unsigned int sizeH, void* pixData)
 	:format(format), sizeW(sizeW), sizeH(sizeH)
 {
-	Resize(sizeW,sizeH, pixData);
+	Resize(sizeW, sizeH, pixData);
 }
 
 
@@ -16,7 +16,7 @@ Texture::Texture(Texture::_format format, unsigned int sizeW, unsigned int sizeH
 //}
 
 
-void Texture::Resize(unsigned int newWidth,unsigned int newHeight, void* pixdata, unsigned int rowBytes)
+void Texture::Resize(unsigned int newWidth, unsigned int newHeight, void* pixdata, unsigned int rowBytes)
 {
 	//if (newWidth == sizeW && newHeight == sizeH)
 	//{
@@ -35,13 +35,13 @@ void Texture::Resize(unsigned int newWidth,unsigned int newHeight, void* pixdata
 		dataformat = DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM;
 	else if (format == _format::Alpha8)
 		dataformat = DXGI_FORMAT::DXGI_FORMAT_A8_UNORM;
-	
 
-	 
+
+
 
 
 	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = newWidth; 
+	textureDesc.Width = newWidth;
 	textureDesc.Height = newHeight;
 	//textureDesc.MipLevels = hasMipmap ? 0 : 1;
 	textureDesc.MipLevels = 1;
@@ -60,10 +60,10 @@ void Texture::Resize(unsigned int newWidth,unsigned int newHeight, void* pixdata
 
 	D3D11_SUBRESOURCE_DATA subData;
 	subData.pSysMem = pixdata;
-	if(rowBytes>0)
+	if (rowBytes > 0)
 		subData.SysMemPitch = rowBytes;
 	else
-		subData.SysMemPitch =(dataformat== Alpha8)? newWidth:(4* newWidth);
+		subData.SysMemPitch = (dataformat == Alpha8) ? newWidth : (4 * newWidth);
 	subData.SysMemSlicePitch = 0;
 
 
@@ -132,8 +132,8 @@ void RenderTexture::Resize(unsigned int newWidth, unsigned int newHeight)
 	textureDesc.Format = dataformat;
 	textureDesc.SampleDesc.Count = 1;
 	textureDesc.SampleDesc.Quality = 0;
-	textureDesc.Usage =D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE|D3D11_BIND_UNORDERED_ACCESS;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
 	textureDesc.CPUAccessFlags = 0;
 	textureDesc.MiscFlags = 0;
 	//textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
@@ -235,18 +235,18 @@ void RenderTexture::CopyToMem(uint8_t* membuf, bool long_term, unsigned int rowB
 
 	D3D11_MAPPED_SUBRESOURCE resultResources;
 
-		D3D11Graphic::GetContext()->Map(copyBuffer.Get(), 0, D3D11_MAP_READ, 0, &resultResources);
+	D3D11Graphic::GetContext()->Map(copyBuffer.Get(), 0, D3D11_MAP_READ, 0, &resultResources);
 
 
 
 
 
-		for (uint32_t i = 0; i < sizeH; i++)
-		{
-			auto pCurPos = membuf + i * rowBytes;
-			auto pMapPos=(uint8_t*)resultResources.pData + resultResources.RowPitch * i;
-			memcpy(pCurPos, pMapPos, sizeW*4);
-		}
+	for (uint32_t i = 0; i < sizeH; i++)
+	{
+		auto pCurPos = membuf + i * rowBytes;
+		auto pMapPos = (uint8_t*)resultResources.pData + resultResources.RowPitch * i;
+		memcpy(pCurPos, pMapPos, sizeW * 4);
+	}
 
 
 

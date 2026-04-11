@@ -20,7 +20,7 @@ Progress::Progress(Window* pWindow) :
     m_nMarqueePos(0),
     m_bReverse(false)
 {
-    SetTextStyle(TEXT_SINGLELINE | TEXT_CENTER, false);
+    SetTextStyle(TEXT_SINGLELINE | TEXT_HCENTER, false);
     SetFixedHeight(UiFixedInt(12), true, true);
     SetMarqueeWidth(10, true);
     SetMarqueeStep(4, true);
@@ -183,8 +183,7 @@ void Progress::SetAttribute(const DString& srName, const DString& strValue)
 
 void Progress::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
 {
-    ASSERT(nNewDpiScale == Dpi().GetScale());
-    if (nNewDpiScale != Dpi().GetScale()) {
+    if (!Dpi().CheckDisplayScaleFactor(nNewDpiScale)) {
         return;
     }
     int32_t iValue = GetMarqueeWidth();
@@ -227,7 +226,7 @@ void Progress::PaintStateImages(IRender* pRender)
         return;
     }
     //加载图片资源
-    LoadImageData(*m_pProgressImage);
+    LoadImageInfo(*m_pProgressImage);
 
     m_sProgressImageModify.clear();
     if (m_bStretchForeImage) {
@@ -235,7 +234,7 @@ void Progress::PaintStateImages(IRender* pRender)
     }
     else {
         ui::UiRect m_rcSrc = rc;
-        std::shared_ptr<ImageInfo> pProgressImageCache = m_pProgressImage->GetImageCache();
+        std::shared_ptr<ImageInfo> pProgressImageCache = m_pProgressImage->GetImageInfo();
         if (pProgressImageCache != nullptr) {
             if (m_rcSrc.right > pProgressImageCache->GetWidth()) {
                 m_rcSrc.right = pProgressImageCache->GetWidth();

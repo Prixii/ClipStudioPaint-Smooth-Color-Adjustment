@@ -597,8 +597,9 @@ public:
     bool EnsureDataItemVisible(size_t itemIndex, bool bToTop);
 
     /** 刷新界面，保持数据与显示同步
+    * @param [in] bSync true表示同步刷新，立即重绘当前视图; false表示异步刷新，刷新动作为异步重绘，标记为脏区域，交给系统重绘界面
     */
-    void Refresh();
+    void Refresh(bool bSync = false);
 
     /** 刷新指定数据项
     * @param [in] dataItemIndexs 需要刷新的数据项索引号, 有效范围：[0, GetDataItemCount())
@@ -789,7 +790,7 @@ public:
     /** 监听选择项发生变化的事件
      * @param[in] callback 选择子项时的回调函数
      */
-    void AttachSelChange(const EventCallback& callback) { AttachEvent(kEventSelChange, callback); }
+    void AttachSelChanged(const EventCallback& callback) { AttachEvent(kEventSelChanged, callback); }
 
     /** 监听双击事件
      * @param[in] callback 事件处理的回调函数，请参考 EventCallback 声明
@@ -836,6 +837,14 @@ public:
      *   wParam: 是接口指针：ListCtrlEditParam*，可以通过设置bCancelled取消操作
      */
     void AttachLeaveEdit(const EventCallback& callback) { this->AttachEvent(kEventLeaveEdit, callback); }
+
+    /** 监听数据项总个数变化事件
+     * @param[in] callback 事件回调函数
+     * 参数说明:
+     *   wParam: 是新的个数(size_t)
+     *   lParam: 是旧的个数(size_t)
+     */
+    void AttachDataItemCountChanged(const EventCallback& callback) { this->AttachEvent(kEventDataItemCountChanged, callback); }
 
 protected:
     /** 控件初始化

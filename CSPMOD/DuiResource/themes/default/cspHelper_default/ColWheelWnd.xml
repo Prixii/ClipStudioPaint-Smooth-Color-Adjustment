@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Window
+        caption="0,0,0,28" use_system_caption="false" snap_layout_menu="true" 
+        shadow_type="default" shadow_attached="true" shadow_snap="true" layered_window="true" 
+        alpha="255" icon="public/caption/logo.ico" size="500,500" min_size="240,180" size_box="4,4,4,4"
+		 shadow_border_color="#CSPColor_CaptionFocus"
+		xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		xmlns="http://tempuri.org/NIMDUISchema.xsd"
+		>
+
+
+	<Class name="replaceColor_text" font="system_14" normal_text_color="#CSPColor_Content" valign="center"/>
+	<Class name="cspStyleSlider30pxHor" 	width="stretch" height="30" valign="center"
+				   bkimage="file='slider_bg.svg' corner='4,4,4,4'" padding="7,10,7,10"
+						 normal_color="#CSPColor_ControlBG" normal_color_margin="7,10,7,10"
+						 hot_color="#CSPColor_Selected" hot_color_margin="7,10,7,10" fade_hot="false"
+				thumb_normal_image="file='slider_thumb.svg' width='16' height='30'" thumb_size="16,30"/>
+	<Class name="edit_num"  valign="center" width="50" height="24" border_size="1"
+					   border_round="2,2" bkcolor="#CSPColor_ControlBG" hot_border_color="#CSPColor_CaptionContent"
+				   normal_text_color="#CSPColor_Content" font="system_14" caret_color="#CSPColor_Content" select_all_on_focus="true"
+					   focus_border_color="#CSPColor_CaptionContent" number_only="true" want_return="true" text_align="hcenter,vcenter"  />
+
+
+	<VBox bkcolor="#CSPColor_PanelBG">    
+        <!-- 标题栏区域 工具窗口不需要文字标题-->
+        <HBox name="window_caption_bar" width="stretch" height="18" normal_color="#CSPColor_CaptionFocus" disabled_color="#CSPColor_CaptionNoFocus">
+			  <Button name="windowMenu"  width="26" height="18" normal_image="file='menu24x.svg' dest='5,1,21,17' " hot_image="file='menu24x_hot.svg' dest='5,1,21,17'"/>
+			  <Control />
+			<Label font="system_12" text_id="STRID_COLORWHEEL"  text_align="vcenter"  margin="8,0,8,0" valign="center"  normal_text_color="#CSPColor_CaptionContent" disabled_text_color="#CSPColor_CaptionContentNoFocus"/>
+			<Control />
+              <Button class="btn_wnd_close_11" height="stretch" width="24" name="btn_Close" margin="0,0,0,2" tooltip_text_id="STRING_CLOSE" normal_image="file='icon_close.svg' width='24' height='24' valign='center' halign='center'"/>
+        </HBox>
+
+		<!-- 工作区域，除了标题栏外的内容都放在这个大的Box区域 -->
+
+		<VBox>
+			<VBox name="colorControlContainer">
+				<LchColorControl_Primary name="visualLchColorWheel_Primary" padding="2,2,2,2"/>
+				<LchColorControl name="visualLchColorWheel" padding="4,4,4,4" visible="false"/>
+			</VBox>
+			<HBox height="auto" name="sliderContainer">
+			<VBox padding="12,4,12,12" height="auto" >
+			<HBox height="auto">
+				<Label class="replaceColor_text"  name="label_L"  text_id="STRID_COLORWHEEL_VISUALLCH_L"/>
+				<Slider class="cspStyleSlider30pxHor" name="slider_vlch_L" max="10000" min="0" step="100" value="5000"/>
+				<RichEdit class="edit_num" name="edit_vlch_L" text="50" max_number="100" min_number="0"/>
+			</HBox>
+			<HBox height="auto">
+				<Label class="replaceColor_text"  name="label_C" text_id="STRID_COLORWHEEL_VISUALLCH_C"/>
+				<Slider class="cspStyleSlider30pxHor" name="slider_vlch_C" max="10000" min="0" step="100" value="5000"/>
+				<RichEdit class="edit_num" name="edit_vlch_C" text="50" max_number="100" min_number="0"/>
+			</HBox>
+			<HBox height="auto">
+				<Label class="replaceColor_text"  name="label_H" text_id="STRID_COLORWHEEL_VISUALLCH_H"/>
+				<Slider class="cspStyleSlider30pxHor" name="slider_vlch_H" max="36000" min="0" step="100" value="0"/>
+				<RichEdit class="edit_num" name="edit_vlch_H" text="0" max_number="360" min_number="0"/>
+			</HBox>
+				</VBox>
+			</HBox>
+		</VBox>
+		
+		
+
+    </VBox>
+</Window>

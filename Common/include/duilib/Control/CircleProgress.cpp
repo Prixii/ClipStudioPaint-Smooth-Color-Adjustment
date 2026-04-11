@@ -56,8 +56,7 @@ void CircleProgress::SetAttribute(const DString& srName, const DString& strValue
 
 void CircleProgress::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
 {
-    ASSERT(nNewDpiScale == Dpi().GetScale());
-    if (nNewDpiScale != Dpi().GetScale()) {
+    if (!Dpi().CheckDisplayScaleFactor(nNewDpiScale)) {
         return;
     }
     float fValue = GetCircleWidth();
@@ -135,8 +134,8 @@ void CircleProgress::PaintStateImages(IRender* pRender)
 
     std::shared_ptr<ImageInfo> pIndicatorImageInfo;
     if (m_pIndicatorImage != nullptr) {
-        LoadImageData(*m_pIndicatorImage);
-        pIndicatorImageInfo = m_pIndicatorImage->GetImageCache();
+        LoadImageInfo(*m_pIndicatorImage);
+        pIndicatorImageInfo = m_pIndicatorImage->GetImageInfo();
         ASSERT(pIndicatorImageInfo != nullptr);
     }    
 

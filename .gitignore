@@ -9,6 +9,11 @@
 # ZIP resource file
 CSPMOD/DuiResource.zip
 
+#duilib header
+#Common/include/duilib/
+#Common/include/skia/
+
+
 # User-specific files
 *.rsuser
 *.suo

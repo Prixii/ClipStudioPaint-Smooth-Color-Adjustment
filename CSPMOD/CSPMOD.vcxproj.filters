@@ -30,6 +30,27 @@
     <Filter Include="Dui\Lang">
       <UniqueIdentifier>{f9496763-c2e7-4d0e-a632-fac59328c5e9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="FilterPluginHost">
+      <UniqueIdentifier>{316c93e8-ae8f-4b3f-b145-16e2ddba78a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FilterPluginHost\ReplaceColor">
+      <UniqueIdentifier>{f4c37008-a5ff-4dc1-857e-e2e0c5d394a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphic">
+      <UniqueIdentifier>{bae7b86e-e58f-4079-a5d3-b1df3ddfa54a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphic\Shaders">
+      <UniqueIdentifier>{647db682-1c3b-4668-8623-60d36dd1bf13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dui\Cursor">
+      <UniqueIdentifier>{4c9e2597-14e2-4406-af4e-b9bdf86f49f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FunctionExpansion\ColPickerWnd">
+      <UniqueIdentifier>{82de5795-3d28-4613-951c-d1185740d625}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dui\UserControl">
+      <UniqueIdentifier>{55d9bcb1-131c-4871-8c5f-82451eba6763}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -98,6 +119,60 @@
     </ClInclude>
     <ClInclude Include="DUI\Dialog\About_Dlg.h">
       <Filter>Dui\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\FilterPlugIn\FilterPluginHost_Export.h">
+      <Filter>FilterPluginHost</Filter>
+    </ClInclude>
+    <ClInclude Include="FilterPluginHost\ReplaceColor\ReplaceColorPlugin.h">
+      <Filter>FilterPluginHost\ReplaceColor</Filter>
+    </ClInclude>
+    <ClInclude Include="FilterPluginHost\ReplaceColor\ReplaceColor.h">
+      <Filter>FilterPluginHost\ReplaceColor</Filter>
+    </ClInclude>
+    <ClInclude Include="FilterPluginHost\ReplaceColor\ReplaceColorForm.h">
+      <Filter>FilterPluginHost\ReplaceColor</Filter>
+    </ClInclude>
+    <ClInclude Include="FilterPluginHost\ReplaceColor\ReplaceColorContext.h">
+      <Filter>FilterPluginHost\ReplaceColor</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\D3D11Graphic.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\Texture.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\HSVColorConvert.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\RenderSubWindow.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\CatWindow_Child.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\Window2DComponent_NOTDCOMP.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="DUI\Dialog\ColWheelWnd.h">
+      <Filter>Dui\Dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="DUI\UserControl\LchColorControl.h">
+      <Filter>Dui\UserControl</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\CSPMOD_ColorConvert.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="DUI\UserControl\LchColorControl_Primary.h">
+      <Filter>Dui\UserControl</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphic\Geometry.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="DUI\UserControl\LchColorControlContext.h">
+      <Filter>Dui\UserControl</Filter>
+    </ClInclude>
+    <ClInclude Include="DUI\UserControl\BrushColorBlock.h">
+      <Filter>Dui\UserControl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -173,6 +248,57 @@
     <ClCompile Include="ScriptAction_ApplyEffects.cpp">
       <Filter>FunctionExpansion</Filter>
     </ClCompile>
+    <ClCompile Include="FilterPluginHost\ReplaceColor\ReplaceColorPlugin.cpp">
+      <Filter>FilterPluginHost\ReplaceColor</Filter>
+    </ClCompile>
+    <ClCompile Include="FilterPluginHost\FilterPluginHost_Export.cpp">
+      <Filter>FilterPluginHost</Filter>
+    </ClCompile>
+    <ClCompile Include="FilterPluginHost\ReplaceColor\ReplaceColor.cpp">
+      <Filter>FilterPluginHost\ReplaceColor</Filter>
+    </ClCompile>
+    <ClCompile Include="FilterPluginHost\ReplaceColor\ReplaceColorForm.cpp">
+      <Filter>FilterPluginHost\ReplaceColor</Filter>
+    </ClCompile>
+    <ClCompile Include="FilterPluginHost\ReplaceColor\ReplaceColorContext.cpp">
+      <Filter>FilterPluginHost\ReplaceColor</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\D3D11Graphic.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\Texture.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\HSVColorConvert.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\RenderSubWindow.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\CatWindow_Child.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\Window2DComponent_NOTDCOMP.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="DUI\Dialog\ColWheelWnd.cpp">
+      <Filter>Dui\Dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="DUI\UserControl\LchColorControl.cpp">
+      <Filter>Dui\UserControl</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic\CSPMOD_ColorConvert.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="DUI\UserControl\LchColorControl_Primary.cpp">
+      <Filter>Dui\UserControl</Filter>
+    </ClCompile>
+    <ClCompile Include="DUI\UserControl\LchColorControlContext.cpp">
+      <Filter>Dui\UserControl</Filter>
+    </ClCompile>
+    <ClCompile Include="DUI\UserControl\BrushColorBlock.cpp">
+      <Filter>Dui\UserControl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\CatTuber64\project\CatTuber64\CatTuber64\src\Util\json\json_valueiterator.inl">
@@ -183,6 +309,12 @@
     </None>
     <None Include="DuiResource\lang\japanese.ini">
       <Filter>Dui\Lang</Filter>
+    </None>
+    <None Include="Graphic\Shaders\Tolerance.hlsli">
+      <Filter>Graphic\Shaders</Filter>
+    </None>
+    <None Include="Graphic\Shaders\HSVConvert.hlsli">
+      <Filter>Graphic\Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -218,6 +350,15 @@
     <Xml Include="DuiResource\themes\default\cspHelper_default\About_Dlg.xml">
       <Filter>Dui\Dialog</Filter>
     </Xml>
+    <Xml Include="DuiResource\themes\default\cspHelper_default\ReplaceColorForm.xml">
+      <Filter>FilterPluginHost\ReplaceColor</Filter>
+    </Xml>
+    <Xml Include="DuiResource\themes\default\cspHelper_default\ColWheelWnd.xml">
+      <Filter>Dui\Dialog</Filter>
+    </Xml>
+    <Xml Include="DuiResource\themes\default\cspHelper_default\ColWheelWndMenu.xml">
+      <Filter>Dui\Dialog</Filter>
+    </Xml>
   </ItemGroup>
   <ItemGroup>
     <Xsd Include="DUI\NIMDUISchema.xsd">
@@ -228,5 +369,40 @@
     <ResourceCompile Include="CSPMOD.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Graphic\Shaders\FilterVS.hlsl">
+      <Filter>Graphic\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Graphic\Shaders\ReplaceColorPS.hlsl">
+      <Filter>Graphic\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Graphic\Shaders\ReplaceColorGenMaskPS.hlsl">
+      <Filter>Graphic\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Graphic\Shaders\ReplaceColorGenMaskPS_Add.hlsl">
+      <Filter>Graphic\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Graphic\Shaders\ReplaceColorGenMaskPS_Sub.hlsl">
+      <Filter>Graphic\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Graphic\Shaders\ReplaceColorPreviewSelecetAreaPS.hlsl">
+      <Filter>Graphic\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Graphic\Shaders\LchColorControlPS.hlsl">
+      <Filter>Graphic\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Graphic\Shaders\LchColorControlPrimaryRectanglePS.hlsl">
+      <Filter>Graphic\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Graphic\Shaders\LchColorControlPrimaryTrianglePS.hlsl">
+      <Filter>Graphic\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Graphic\Shaders\LchColorControlPrimaryHueCirclePS.hlsl">
+      <Filter>Graphic\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Graphic\Shaders\AlphaBlurPS.hlsl">
+      <Filter>Graphic\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -186,7 +186,9 @@ bool Window::SetWindowIcon(const DString& iconFilePath)
         return false;
     }
     bool bRet = false;
-    FilePath iconFullPath = GlobalManager::Instance().GetExistsResFullPath(GetResourcePath(), GetXmlPath(), FilePath(iconFilePath));
+    bool bLocalPath = true;
+    bool bResPath = true;
+    FilePath iconFullPath = GlobalManager::Instance().GetExistsResFullPath(GetResourcePath(), GetXmlPath(), FilePath(iconFilePath), bLocalPath, bResPath);
     ASSERT(!iconFullPath.IsEmpty());
     if (iconFullPath.IsEmpty()) {
         return false;
@@ -337,7 +339,7 @@ void Window::PreInitWindow()
     Box* pRoot = nullptr;
     if (m_windowBuilder != nullptr) {
         auto callback = UiBind(&Window::CreateControl, this, std::placeholders::_1);
-        Control* pControl = m_windowBuilder->CreateControls(callback, this);
+        Control* pControl = m_windowBuilder->CreateControls(this, callback);
         pRoot = m_windowBuilder->ToBox(pControl);
         ASSERT(pRoot != nullptr);
     }
@@ -377,7 +379,12 @@ void Window::PostInitWindow()
     }
 
     //检测是否需要根据root节点的auto类型设置窗口大小（比如菜单等有此种用法）
-    AutoResizeWindow(false);
+    if (AutoResizeWindow(false)) {
+        //调整大小后，需要再次进行窗口居中
+        if (NativeWnd()->NeedCenterWindowAfterCreated()) {
+            CenterWindow();
+        }
+    }
 
     //创建后，Render大小与客户区大小同步
     ResizeRenderToClientSize();
@@ -387,6 +394,11 @@ void Window::PreCloseWindow()
 {
     ClearStatus();
     OnPreCloseWindow();
+
+    //销毁Tooltp窗口
+    if (m_toolTip != nullptr) {
+        m_toolTip->DestroyToolTip();
+    }
 }
 
 void Window::PostCloseWindow()
@@ -775,7 +787,7 @@ void Window::OnWindowExitFullScreen()
 {
 }
 
-void Window::OnWindowDpiChanged(uint32_t /*nOldDPI*/, uint32_t /*nNewDPI*/)
+void Window::OnWindowDisplayScaleChanged(uint32_t /*nOldScaleFactor*/, uint32_t /*nNewScaleFactor*/)
 {
 }
 
@@ -1036,32 +1048,31 @@ void Window::SetInitSize(int cx, int cy)
     }
 }
 
-void Window::OnDpiScaleChanged(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
+void Window::OnDisplayScaleChanged(uint32_t nOldScaleFactor, uint32_t nNewScaleFactor)
 {
-    if ((nOldDpiScale == nNewDpiScale) || (nNewDpiScale == 0)) {
+    if ((nOldScaleFactor == nNewScaleFactor) || (nNewScaleFactor == 0)) {
         return;
     }
-    ASSERT(nNewDpiScale == Dpi().GetScale());
-    if (nNewDpiScale != Dpi().GetScale()) {
+    if (!Dpi().CheckDisplayScaleFactor(nNewScaleFactor)) {
         return;
     }
-    WindowBase::OnDpiScaleChanged(nOldDpiScale, nNewDpiScale);
+    WindowBase::OnDisplayScaleChanged(nOldScaleFactor, nNewScaleFactor);
 
     //窗口阴影
     if (m_shadow != nullptr) {
-        m_shadow->ChangeDpiScale(Dpi(), nOldDpiScale, nNewDpiScale);
+        m_shadow->ChangeDpiScale(Dpi(), nOldScaleFactor, nNewScaleFactor);
     }
 
     //更新窗口自身的DPI关联属性
-    m_rcAlphaFix = Dpi().GetScaleRect(m_rcAlphaFix, nOldDpiScale);
-    m_renderOffset = Dpi().GetScalePoint(m_renderOffset, nOldDpiScale);
+    m_rcAlphaFix = Dpi().GetScaleRect(m_rcAlphaFix, nOldScaleFactor);
+    m_renderOffset = Dpi().GetScalePoint(m_renderOffset, nOldScaleFactor);
 
     //更新布局和控件的DPI关联属性
     SetArrange(true);
 
     Box* pRoot = GetRoot();
     if (pRoot != nullptr) {
-        pRoot->ChangeDpiScale(nOldDpiScale, nNewDpiScale);
+        pRoot->ChangeDpiScale(nOldScaleFactor, nNewScaleFactor);
         pRoot->Arrange();
         Invalidate(pRoot->GetPos());
     }
@@ -1089,9 +1100,15 @@ LRESULT Window::OnSizeMsg(WindowSizeType sizeType, const UiSize& /*newWindowSize
             GetWindowRect(rcWindow);
             UiRect rcClientRect;
             GetClientRect(rcClientRect);
-            //ASSERT(rcClientRect.Width() == rcWindow.Width());
-            //ASSERT(rcClientRect.Height() == rcWindow.Height());
-            if ((rcClientRect.Width() == rcWindow.Width()) && (rcClientRect.Height() == rcWindow.Height())) {
+            int32_t cxClient = rcClientRect.Width();
+            int32_t cyClient = rcClientRect.Height();
+            if (Dpi().HasPixelDensity()) {
+                Dpi().UnscaleInt(cxClient);
+                Dpi().UnscaleInt(cyClient);
+                Dpi().ScaleWindowSize(cxClient);
+                Dpi().ScaleWindowSize(cyClient);
+            }
+            if ((cxClient == rcWindow.Width()) && (cyClient == rcWindow.Height())) {
                 //全屏时，设置外边距，避免客户区的内容溢出屏幕
                 UiRect rcWork;
                 GetMonitorWorkRect(rcWork);
@@ -1108,6 +1125,12 @@ LRESULT Window::OnSizeMsg(WindowSizeType sizeType, const UiSize& /*newWindowSize
                 }
                 if (rcWindow.bottom > rcWork.bottom) {
                     rcFullscreenMargin.bottom = rcWindow.bottom - rcWork.bottom;
+                }
+                if (Dpi().HasPixelDensity()) {
+                    rcFullscreenMargin.left = (int32_t)std::round(rcFullscreenMargin.left * Dpi().GetPixelDensity());
+                    rcFullscreenMargin.top = (int32_t)std::round(rcFullscreenMargin.top * Dpi().GetPixelDensity());
+                    rcFullscreenMargin.right = (int32_t)std::round(rcFullscreenMargin.right * Dpi().GetPixelDensity());
+                    rcFullscreenMargin.bottom = (int32_t)std::round(rcFullscreenMargin.bottom * Dpi().GetPixelDensity());
                 }
                 bool bHasShadowBox = false;
                 Box* pRoot = GetXmlRoot();
@@ -2013,6 +2036,25 @@ void Window::OnCreateWndMsg(bool bDoModal, const NativeMsg& /*nativeMsg*/, bool&
 
 void Window::OnWindowPosSnapped(bool bLeftSnap, bool bRightSnap, bool bTopSnap, bool bBottomSnap)
 {
+    if (IsWindowMaximized() || IsWindowMinimized()) {
+        //窗口最大化或者最小化时，不处理
+        return;
+    }
+    UiRect rcSizeBox = GetSizeBox();
+
+    //没有窗口边框，不处理
+    if (rcSizeBox.left <= 0) {
+        bLeftSnap = false;
+    }
+    if (rcSizeBox.top <= 0) {
+        bTopSnap = false;
+    }
+    if (rcSizeBox.right <= 0) {
+        bRightSnap = false;
+    }
+    if (rcSizeBox.bottom <= 0) {
+        bBottomSnap = false;
+    }
     if (m_shadow != nullptr) {
         m_shadow->SetWindowPosSnap(bLeftSnap, bRightSnap, bTopSnap, bBottomSnap);
     }
@@ -2073,6 +2115,10 @@ void Window::OnButtonDown(EventType eventType, const UiPoint& pt, const NativeMs
                 return;
             }
         }
+    }
+    else if (!IsUseSystemCaption() && (m_shadow != nullptr) && IsShadowAttached()) {
+        //检查是否点击在窗口阴影区域(实现鼠标点击阴影，穿透到后面窗口的功能)
+        m_shadow->CheckMouseClickOnShadow(eventType, pt);
     }
     if (!bWindowFocused && !windowFlag.expired()) {
         //确保被点击的窗口有输入焦点(解决CEF窗口模式下，输入焦点无法从页面切换到地址栏的问题)
@@ -2420,35 +2466,45 @@ bool Window::PreparePaint(bool bArrange)
     return bRet;
 }
 
-void Window::AutoResizeWindow(bool bRepaint)
+bool Window::AutoResizeWindow(bool bRepaint)
 {
-    if ((m_pRoot != nullptr) && (m_pRoot->GetFixedWidth().IsAuto() || m_pRoot->GetFixedHeight().IsAuto())) {
+    bool bResized = false;
+    if ((m_pRoot != nullptr) && (!m_pRoot->GetFixedWidth().IsStretch() || !m_pRoot->GetFixedHeight().IsStretch())) {
+        //跟容器属性：如果宽度或者高度有不是拉伸类型的，根据跟容器的大小自动修改窗口大小
         UiSize maxSize(999999, 999999);
-        UiEstSize estSize = m_pRoot->EstimateSize(maxSize);
-        if (!estSize.cx.IsStretch() && !estSize.cy.IsStretch()) {
-            UiSize needSize = MakeSize(estSize);
-            if (needSize.cx < m_pRoot->GetMinWidth()) {
-                needSize.cx = m_pRoot->GetMinWidth();
+        const UiEstSize estSize = m_pRoot->EstimateSize(maxSize);
+        if (!estSize.cx.IsStretch() || !estSize.cy.IsStretch()) {
+            UiSize newSize(estSize.cx.GetInt32(), estSize.cy.GetInt32());
+            newSize.cx = std::clamp(newSize.cx, m_pRoot->GetMinWidth(), m_pRoot->GetMaxWidth());
+            newSize.cy = std::clamp(newSize.cy, m_pRoot->GetMinHeight(), m_pRoot->GetMaxHeight());
+
+            if (Dpi().HasPixelDensity()) {
+                //转换为窗口大小
+                newSize.cx = (int32_t)std::round(newSize.cx / Dpi().GetPixelDensity());
+                newSize.cy = (int32_t)std::round(newSize.cy / Dpi().GetPixelDensity());
             }
-            if (needSize.cx > m_pRoot->GetMaxWidth()) {
-                needSize.cx = m_pRoot->GetMaxWidth();
+
+            UiRect rcWindow;
+            GetWindowRect(rcWindow);
+            if (estSize.cx.IsStretch()) {
+                newSize.cx = rcWindow.Width();
             }
-            if (needSize.cy < m_pRoot->GetMinHeight()) {
-                needSize.cy = m_pRoot->GetMinHeight();
+            if (estSize.cy.IsStretch()) {
+                newSize.cy = rcWindow.Height();
             }
-            if (needSize.cy > m_pRoot->GetMaxHeight()) {
-                needSize.cy = m_pRoot->GetMaxHeight();
-            }
-            UiRect rect;
-            GetWindowRect(rect);
-            if ((rect.Width() != needSize.cx) || (rect.Height() != needSize.cy)) {
-                Resize(needSize.cx, needSize.cy, true, false);
+            //窗口的高度和宽度禁止设置为0（备注：SDL内部不支持）
+            newSize.cx = std::max(newSize.cx, 1);
+            newSize.cy = std::max(newSize.cy, 1);
+            if ((rcWindow.Width() != newSize.cx) || (rcWindow.Height() != newSize.cy)) {
+                Resize(newSize.cx, newSize.cy, true, false);
+                bResized = true;
                 if (bRepaint) {
                     InvalidateAll();
                 }
             }
         }
     }
+    return bResized;
 }
 
 void Window::ArrangeRoot()

@@ -13,11 +13,11 @@ namespace ui
 
 RichText::RichText(Window* pWindow) :
     Control(pWindow),
-    m_hAlignType(HorAlignType::kHorAlignLeft),
-    m_vAlignType(VerAlignType::kVerAlignTop),
+    m_hAlignType(HorAlignType::kAlignLeft),
+    m_vAlignType(VerAlignType::kAlignTop),
     m_fRowSpacingMul(1.0f),
     m_bLinkUnderlineFont(true),
-    m_nTextDataDPI(0),
+    m_nTextDataDisplayScaleFactor(0),
     m_bWordWrap(true)
 {
 }
@@ -32,24 +32,26 @@ DString RichText::GetType() const { return DUI_CTR_RICHTEXT; }
 void RichText::SetAttribute(const DString& strName, const DString& strValue)
 {
     if (strName == _T("text_align")) {
+        //水平方向对齐方式
         if (strValue.find(_T("left")) != DString::npos) {
-            SetHAlignType(HorAlignType::kHorAlignLeft);
+            SetTextHAlignType(HorAlignType::kAlignLeft);
         }
         else if (strValue.find(_T("hcenter")) != DString::npos) {
-            SetHAlignType(HorAlignType::kHorAlignCenter);
+            SetTextHAlignType(HorAlignType::kAlignCenter);
         }
         else if (strValue.find(_T("right")) != DString::npos) {
-            SetHAlignType(HorAlignType::kHorAlignRight);
+            SetTextHAlignType(HorAlignType::kAlignRight);
         }
 
+        //垂直方向对齐方式
         if (strValue.find(_T("top")) != DString::npos) {
-            SetVAlignType(VerAlignType::kVerAlignTop);
+            SetTextVAlignType(VerAlignType::kAlignTop);
         }
         else if (strValue.find(_T("vcenter")) != DString::npos) {
-            SetVAlignType(VerAlignType::kVerAlignCenter);
+            SetTextVAlignType(VerAlignType::kAlignCenter);
         }
         else if (strValue.find(_T("bottom")) != DString::npos) {
-            SetVAlignType(VerAlignType::kVerAlignBottom);
+            SetTextVAlignType(VerAlignType::kAlignBottom);
         }
         m_textData.clear();
         m_spDrawRichTextCache.reset();
@@ -124,8 +126,7 @@ void RichText::SetAttribute(const DString& strName, const DString& strValue)
 
 void RichText::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
 {
-    ASSERT(nNewDpiScale == Dpi().GetScale());
-    if (nNewDpiScale != Dpi().GetScale()) {
+    if (!Dpi().CheckDisplayScaleFactor(nNewDpiScale)) {
         return;
     }
     UiPadding rcTextPadding = GetTextPadding();
@@ -135,31 +136,38 @@ void RichText::ChangeDpiScale(uint32_t nOldDpiScale, uint32_t nNewDpiScale)
     BaseClass::ChangeDpiScale(nOldDpiScale, nNewDpiScale);
 }
 
+void RichText::OnLanguageChanged()
+{
+    BaseClass::OnLanguageChanged();
+    Redraw();
+}
+
 void RichText::Redraw()
 {
     //重新绘制
     m_textData.clear();
     m_spDrawRichTextCache.reset();
     Invalidate();
+    RelayoutOrRedraw();
 }
 
 uint16_t RichText::GetTextStyle() const
 {
     uint32_t uTextStyle = 0;
-    if (m_hAlignType == HorAlignType::kHorAlignCenter) {
-        uTextStyle |= TEXT_CENTER;
+    if (m_hAlignType == HorAlignType::kAlignCenter) {
+        uTextStyle |= TEXT_HCENTER;
     }
-    else if (m_hAlignType == HorAlignType::kHorAlignRight) {
+    else if (m_hAlignType == HorAlignType::kAlignRight) {
         uTextStyle |= TEXT_RIGHT;
     }
     else {
         uTextStyle |= TEXT_LEFT;
     }
 
-    if (m_vAlignType == VerAlignType::kVerAlignCenter) {
+    if (m_vAlignType == VerAlignType::kAlignCenter) {
         uTextStyle |= TEXT_VCENTER;
     }
-    else if (m_vAlignType == VerAlignType::kVerAlignBottom) {
+    else if (m_vAlignType == VerAlignType::kAlignBottom) {
         uTextStyle |= TEXT_BOTTOM;
     }
     else {
@@ -232,7 +240,7 @@ UiSize RichText::EstimateText(UiSize szAvailable)
     }
     else if (GetFixedWidth().IsAuto()) {
         //宽度为自动时，不限制宽度
-        nWidth = INT_MAX;
+        nWidth = GetMaxWidth();
     }
 
     //最大高度，不限制
@@ -290,14 +298,14 @@ void RichText::PaintText(IRender* pRender)
 
     //如果设置了对齐方式，需要评估绘制位置
     const uint32_t uTextStyle = GetTextStyle();
-    if ((uTextStyle & (TEXT_CENTER | TEXT_RIGHT | TEXT_VCENTER | TEXT_BOTTOM))) {
+    if ((uTextStyle & (TEXT_HCENTER | TEXT_RIGHT | TEXT_VCENTER | TEXT_BOTTOM))) {
         //计算绘制所占的区域大小
         UiRect rect;
         CalcDestRect(pRender, rc, rect);
-        if ((rect.Width() < rc.Width()) && (uTextStyle & (TEXT_CENTER | TEXT_RIGHT))) {
+        if ((rect.Width() < rc.Width()) && (uTextStyle & (TEXT_HCENTER | TEXT_RIGHT))) {
             //水平方向
             int32_t diff = rc.Width() - rect.Width();
-            if (uTextStyle & TEXT_CENTER) {
+            if (uTextStyle & TEXT_HCENTER) {
                 rc.Offset(diff / 2, 0);
             }
             else if (uTextStyle & TEXT_RIGHT) {
@@ -430,14 +438,14 @@ void RichText::CheckParseText()
     }
 
     //当DPI变化时，需要重新解析文本，更新字体大小
-    if (m_nTextDataDPI != Dpi().GetDPI()) {
+    if (m_nTextDataDisplayScaleFactor != Dpi().GetDisplayScaleFactor()) {
         m_textData.clear();
         m_spDrawRichTextCache.reset();
     }
 
     if (m_textData.empty()) {
         ParseText(m_textData);
-        m_nTextDataDPI = Dpi().GetDPI();
+        m_nTextDataDisplayScaleFactor = Dpi().GetDisplayScaleFactor();
         m_spDrawRichTextCache.reset();
     }
 }
@@ -728,7 +736,7 @@ void RichText::SetWordWrap(bool bWordWrap)
     }
 }
 
-void RichText::SetHAlignType(HorAlignType alignType)
+void RichText::SetTextHAlignType(HorAlignType alignType)
 {
     if (m_hAlignType != alignType) {
         m_hAlignType = alignType;
@@ -741,7 +749,7 @@ HorAlignType RichText::GetHAlignType() const
     return m_hAlignType;
 }
 
-void RichText::SetVAlignType(VerAlignType alignType)
+void RichText::SetTextVAlignType(VerAlignType alignType)
 {
     if (m_vAlignType != alignType) {
         m_vAlignType = alignType;

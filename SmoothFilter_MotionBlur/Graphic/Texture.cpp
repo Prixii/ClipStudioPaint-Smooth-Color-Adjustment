@@ -1,6 +1,6 @@
 #include "../pch.h"
-#include "Graphic/Texture.h"
-#include"Graphic/D3D11Graphic.h"
+#include"./D3D11Graphic.h"
+#include "./Texture.h"
 
 
 Texture::Texture(Texture::_format format, unsigned int sizeW, unsigned int sizeH, void* pixData)
